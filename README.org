@@ -1,0 +1,8 @@
+#+TITLE: Space Cubics Generic IP: SC SPI-Lite
+#+PROPERTY: header-args:emacs-lisp :results silent
+
+Space Cubics SPI-Lite Core is a master core for the Serial Peripheral Interface (SPI).
+The SPI is s a commonly used simple communication interface in microcontrollers and their peripheral ICs. It is widely adopted in ICs such as sensors, A/D converters, and D/A converters.
+
+SC SPI-Lite is designed with a focus on targeting low-functionality ICs, emphasizing easy communication with minimal register access. It is well-suited for connecting to devices where data write and read can be accomplished within a frame of 32 bits or less.
+

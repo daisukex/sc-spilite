@@ -1,0 +1,12 @@
+../rtl/sc-generic/sc_ipreg_pkg.sv
+../rtl/sc-generic/sc_regbus_if.sv
+../rtl/sc-spi-engine/sc_spi_stc.v
+../rtl/sc-spi-engine/sc_spi_scg.v
+../rtl/sc-spi-engine/sc_spi_spc.v
+../rtl/sc-spi-engine/sc_spi_sss.v
+../rtl/sc-spi-engine/sc_spi_engine.v
+../rtl/sc-ahbip/sc_ahbip_slave.v
+../rtl/sc-spilite/sc_spil_pkg.sv
+../rtl/sc-spilite/sc_spil_reg.sv
+../rtl/sc-spilite/sc_spil_scd.sv
+../rtl/sc-spilite/sc_spilite.sv

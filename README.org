@@ -6,3 +6,4 @@ The SPI is s a commonly used simple communication interface in microcontrollers 
 
 SC SPI-Lite is designed with a focus on targeting low-functionality ICs, emphasizing easy communication with minimal register access. It is well-suited for connecting to devices where data write and read can be accomplished within a frame of 32 bits or less.
 
+This IP core is under development.

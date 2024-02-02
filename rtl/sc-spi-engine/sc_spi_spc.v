@@ -267,6 +267,22 @@ always @ (*) begin
 end
 assign LRXDATA = rxdat;
 
+function [3:0] fc2word;
+  input md;
+  input [8:0] fc;
+  input [8:0] dw;
+  reg [8:0] bp;
+begin
+  if (!md) begin
+    bp = $unsigned(dw - fc);
+    fc2word = bp[8:5];
+  end
+  else begin
+    fc2word = fc[8:5];
+  end
+end
+endfunction
+
 function [4:0] fc2bit;
   input md;
   input [8:0] fc;

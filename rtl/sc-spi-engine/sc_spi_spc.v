@@ -66,7 +66,7 @@ reg [4:0] frxc_r, frxc_f;           // SPI Frame RX Data Count
 reg [31:0] rxdat, rxdat_r, rxdat_f; // SPI RX Data
 reg rxval, rxval_r, rxval_f;        // SPI RX Valid
 wire [4:0] bpos;                    // Bit Position
-assign bpos = fc2bit(BORDER, fc, DWIDTH[4:0]);
+assign bpos = fc2bit(BORDER, fc, DWIDTH);
 assign TXDPT = fc2word(BORDER, fc, DWIDTH);
 
 // ----------
@@ -178,7 +178,7 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
 
     // SPI RX Data
     if (clken_f) begin
-      rxdat_r[bpos] <= MISO;
+      rxdat_r[fc2bit(BORDER, frxc_f, DWIDTH)] <= MISO;
       if ((!BORDER & bpos == 0) | (BORDER & bpos == 24))
         rxval_r <= 1'b1;
     end
@@ -193,9 +193,10 @@ always @ (negedge SPICLK or negedge SYSRSTB) begin
     mosi_f <= 1'b0;
     frxc_f <= 0;
     rxdat_f <= 0;
+    rxval_f <= 1'b0;
   end
   else begin
-    rxdat_f <= 0;
+    rxval_f <= 1'b0;
 
     // Chip Select
     if (spist == spiCSS | spist == spiDATA)
@@ -216,7 +217,7 @@ always @ (negedge SPICLK or negedge SYSRSTB) begin
 
     // SPI RX Data
     if (clken_r) begin
-      rxdat_f[bpos] <= MISO;
+      rxdat_f[fc2bit(BORDER, frxc_r, DWIDTH)] <= MISO;
       if ((!BORDER & bpos == 0) | (BORDER & bpos == 24))
         rxval_f <= 1'b1;
     end

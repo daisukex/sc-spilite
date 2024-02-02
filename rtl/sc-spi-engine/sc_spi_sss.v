@@ -23,13 +23,11 @@ module sc_spi_sss (
   input SYSCLK,
   input CLKEN,
   output reg SPIBUSY_SYSCLK,
-  output reg RXVALID_SYSCLK,
 
   // Sync SRCCLK
   input SRCCLK,
   output reg CLKEN_SRCCLK,
-  input SPIBUSY,
-  input RXVALID
+  input SPIBUSY
 );
 
 // ----------
@@ -39,20 +37,6 @@ reg sync_clken;
 always @ (posedge SRCCLK) begin
   sync_clken <= CLKEN;
   CLKEN_SRCCLK <= sync_clken;
-end
-
-// ----------
-// Receive data valid signal synchronization
-// --------------------------------------------------
-reg sync_rxdetect;
-reg [1:0] rxdetect_p = 2'b00;
-always @ (posedge SYSCLK) begin
-  sync_rxdetect <= RXVALID;
-  rxdetect_p <= {rxdetect_p[0], sync_rxdetect};
-  if (rxdetect_p[1] != rxdetect_p[0])
-    RXVALID_SYSCLK <= 1'b1;
-  else
-    RXVALID_SYSCLK <= 1'b0;
 end
 
 // ----------

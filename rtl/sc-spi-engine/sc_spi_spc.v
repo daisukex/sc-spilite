@@ -38,7 +38,6 @@ module sc_spi_spc (
   input [31:0] TXDATA,       // SPI Transfer Data
   output [3:0] TXDPT,        // SPI Transfer buffer pointer
   output reg [31:0] RXDATA,  // SPI Receive Data
-  output [31:0] LRXDATA,     // SPI Last Receive Data
   output reg RXVALID,        // SPI Receive Data Valid
   output reg [3:0] RXDPT,    // SPI Receive buffer pointer
 
@@ -266,7 +265,6 @@ always @ (*) begin
     end
   endcase
 end
-assign LRXDATA = rxdat;
 
 function [3:0] fc2word;
   input md;

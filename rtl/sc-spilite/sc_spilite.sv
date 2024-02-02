@@ -157,6 +157,7 @@ sc_spi_engine spi_engine (
   .TXDPT(REG_TXDPT),
   .RXDATA(REG_RXDATA),
   .RXDPT(REG_RXDPT),
+  .RXVALID(/*open*/),
   .SPIBUSY(REG_SPIBUSY),
   .SPICOMPLETE(REG_SPICOMPLETE),
   .CSB(CSB_IN),

@@ -86,9 +86,7 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
     // spiIDLE state
     // ----------------------------------------
     if (spist == spiIDLE) begin
-      if (SPIBUSY)
-        SPIBUSY <= 1'b0;
-      else if (SPISTART & !SPIBUSY) begin
+      if (SPISTART & !SPIBUSY) begin
         txd <= TXDATA;
         TXDETECT <= ~TXDETECT;
         SPIBUSY <= 1'b1;
@@ -146,6 +144,7 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
     else if (spist == spiCSH) begin
       if (fc == CSHOLD - 1) begin
         fc <= 0;
+        SPIBUSY <= 1'b0;
         spist <= spiIDLE;
       end
       else

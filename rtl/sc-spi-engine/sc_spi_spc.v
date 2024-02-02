@@ -36,6 +36,7 @@ module sc_spi_spc (
   output reg SPIBUSY,        // SPI Busy
   input BORDER,              // SPI Byte Order
   input [31:0] TXDATA,       // SPI Transfer Data
+  output [3:0] TXDPT,        // SPI Transfer buffer pointer
   output reg TXDETECT,       // SPI Transfer data detect
   output reg [31:0] RXDATA,  // SPI Receive Data
   output [31:0] LRXDATA,     // SPI Last Receive Data
@@ -68,6 +69,7 @@ reg [31:0] rxdat, rxdat_r, rxdat_f; // SPI RX Data
 reg rxval, rxval_r, rxval_f;        // SPI RX Valid
 wire [4:0] bpos;                    // Bit Position
 assign bpos = fc2bit(BORDER, fc, DWIDTH[4:0]);
+assign TXDPT = fc2word(BORDER, fc, DWIDTH);
 
 // ----------
 // SPI Transmit State Machine

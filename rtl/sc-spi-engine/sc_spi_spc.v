@@ -77,11 +77,9 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
   if (!SYSRSTB) begin
     fc <= 0;
     SPIBUSY <= 1'b0;
-    RXVALID <= 1'b0;
     spist <= spiIDLE;
   end
   else begin
-    RXVALID <= 1'b0;
 
     // spiIDLE state
     // ----------------------------------------
@@ -120,17 +118,8 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
           spist <= spiIDLE;
         end
       end
-      else begin
+      else
         fc <= fc + 1;
-
-        // RX Data Control
-        if (bpos == 0)
-          RXDPT <= TXDPT;
-        if (rxval) begin
-          RXDATA <= rxdat;
-          RXVALID <= 1'b1;
-        end
-      end
     end
  
     // spiCSH (Chip Select Hold) state
@@ -143,6 +132,23 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
       end
       else
         fc <= fc + 1;
+    end
+  end
+end
+
+// ----------
+// RX Data Control
+// --------------------------------------------------
+always @ (posedge SPICLK or negedge SYSRSTB) begin
+  if (!SYSRSTB)
+    RXVALID <= 1'b0;
+  else begin
+    RXVALID <= 1'b0;
+    if (bpos == 0)
+      RXDPT <= TXDPT;
+    if (rxval) begin
+      RXDATA <= rxdat;
+      RXVALID <= 1'b1;
     end
   end
 end

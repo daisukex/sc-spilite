@@ -37,13 +37,17 @@ module sc_spi_engine (
   input BORDER,
   input TXSTART,
   input CSEXTEND,
+  output SPIBUSY,
+  output SPICOMPLETE,
+
+  // Data Interface
+  // ------------------------
+  output DATACLK,
   input [31:0] TXDATA,
   output [3:0] TXDPT,
   output [31:0] RXDATA,
   output [3:0] RXDPT,
   output RXVALID,
-  output SPIBUSY,
-  output SPICOMPLETE,
 
   // SPI Interface
   // ------------------------
@@ -133,6 +137,7 @@ sc_spi_scg scg (
   .SPICLK(CLK_SPICLK)
 );
 assign SPICLK = (!CLK_ENABLE_SRCCLK) ? 1'b0: CLK_SPICLK;
+assign DATACLK = SPICLK;
 
 // ----------
 // SPI Protocol Controller

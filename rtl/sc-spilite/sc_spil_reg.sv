@@ -40,10 +40,12 @@ module sc_spil_reg
   input SPIBUSY,
   input SPICOMPLETE,
   output BORDER,
+  input DATACLK,
   output [31:0] TXDATA,
   input [3:0] TXDPT,
   input [31:0] RXDATA,
   input [3:0] RXDPT,
+  input RXVALID,
   output [7:0] CLKDR,
   output [3:0] CSSETUP,
   output [3:0] CSHOLD,
@@ -180,12 +182,12 @@ for (i=0; i<BUF_LINE; i=i+1)
   assign hit_r_srxd[i] = reg_hit_buf(SPL_RXD_p, i, ADDR_DECODE_BITS, REGBUS.RADR, REGBUS.RENB);
 
 // Register
-always @ (posedge SYSCLK) begin
+always @ (posedge DATACLK or negedge SYSRSTB) begin
   integer bf;
   if (!SYSRSTB)
     for (bf=0; bf<BUF_LINE; bf=bf+1)
       srxd[bf]  <= 0;
-  else if (SPICOMPLETE)
+  else if (RXVALID)
     srxd[RXDPT] <= RXDATA;
 end
 

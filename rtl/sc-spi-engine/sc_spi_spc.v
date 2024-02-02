@@ -37,7 +37,6 @@ module sc_spi_spc (
   input BORDER,              // SPI Byte Order
   input [31:0] TXDATA,       // SPI Transfer Data
   output [3:0] TXDPT,        // SPI Transfer buffer pointer
-  output reg TXDETECT,       // SPI Transfer data detect
   output reg [31:0] RXDATA,  // SPI Receive Data
   output [31:0] LRXDATA,     // SPI Last Receive Data
   output reg RXVALID,        // SPI Receive Data Valid
@@ -60,7 +59,6 @@ localparam spiIDLE = 0,             // - IDLE State
 reg [8:0] fc;                       // - SPI Frame Count
 
 // SPI signal
-reg [31:0] txd;                     // SPI Transmit data latched by spiclk
 reg clken_r, clken_f;               // SPI Clock Enable
 reg cs_r, cs_f;                     // SPI Chip Select 
 reg mosi_r, mosi_f;                 // SPI Master Out, Slave In
@@ -77,9 +75,7 @@ assign TXDPT = fc2word(BORDER, fc, DWIDTH);
 always @ (posedge SPICLK or negedge SYSRSTB) begin
   if (!SYSRSTB) begin
     fc <= 0;
-    txd <= 8'h0;
     SPIBUSY <= 1'b0;
-    TXDETECT <= 1'b0;
     RXVALID <= 1'b0;
     spist <= spiIDLE;
   end
@@ -89,8 +85,6 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
     // ----------------------------------------
     if (spist == spiIDLE) begin
       if (SPISTART & !SPIBUSY) begin
-        txd <= TXDATA;
-        TXDETECT <= ~TXDETECT;
         SPIBUSY <= 1'b1;
         fc <= 0;
         if (CSSETUP != 0)
@@ -126,12 +120,6 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
       end
       else begin
         fc <= fc + 1;
-
-        // TX Data Control
-        if ((!BORDER & bpos == 0) | (BORDER & bpos == 24)) begin
-          txd <= TXDATA;
-          TXDETECT <= ~TXDETECT;
-        end
 
         // RX Data Control
         if (rxval) begin
@@ -182,7 +170,7 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
 
     // SPI TX/RX Data
     if (spist == spiDATA) begin
-      mosi_r <= txd[bpos];
+      mosi_r <= TXDATA[bpos];
       frxc_r <= fc;
     end
     else
@@ -220,7 +208,7 @@ always @ (negedge SPICLK or negedge SYSRSTB) begin
 
     // SPI TX/RX Data
     if (spist == spiDATA) begin
-      mosi_f <= txd[bpos];
+      mosi_f <= TXDATA[bpos];
       frxc_f <= fc;
     end
     else

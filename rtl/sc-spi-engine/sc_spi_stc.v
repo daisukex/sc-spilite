@@ -35,8 +35,6 @@ module sc_spi_stc (
   input BORDER,
   input TXSTART,
   input CSEXTEND,
-  input [31:0] TXDATA,
-  output reg [3:0] TXDPT,
   output reg [31:0] RXDATA,
   output reg [3:0] RXDPT,
   output reg SPIBUSY,
@@ -59,8 +57,6 @@ module sc_spi_stc (
   input SPC_SPIBUSY,
   output reg SPC_CSEXTEND,
   output reg SPC_BORDER,
-  output reg [31:0] SPC_TXDATA,
-  input SPC_TXDETECT,
   input [31:0] SPC_RXDATA,
   input [31:0] SPC_LRXDATA,
   input SPC_RXVALID
@@ -85,7 +81,6 @@ reg [7:0] clock_count;
 always @ (posedge SYSCLK) begin
   if (!SYSRSTB) begin
     SPC_SPISTART <= 1'b0;
-    TXDPT <= 4'h0;
     RXDPT <= 4'h0;
     SPIBUSY <= 1'b0;
     SPICOMPLETE <= 1'b0;
@@ -101,14 +96,10 @@ always @ (posedge SYSCLK) begin
     // ----------------------------------------
     if (state == txIDLE) begin
       if (TXSTART) begin
-        if (BORDER) begin
-          TXDPT <= 4'h0;
+        if (BORDER)
           RXDPT <= 4'h0;
-        end
-        else begin
-          TXDPT <= DWIDTH[8:5];
+        else
           RXDPT <= DWIDTH[8:5];
-        end
         SPIBUSY <= 1'b1;
         SPC_CSSETUP <= CSSETUP;
         SPC_CSHOLD <= CSHOLD;
@@ -126,11 +117,6 @@ always @ (posedge SYSCLK) begin
     // ----------------------------------------
     else if (state == txSETUP) begin
       SPC_SPISTART <= 1'b1;
-      SPC_TXDATA <= TXDATA;
-      if (BORDER)
-        TXDPT <= TXDPT + 1;
-      else
-        TXDPT <= TXDPT - 1;
       CLK_ENABLE <= 1'b1;
       state      <= txEXEC;
     end
@@ -146,14 +132,6 @@ always @ (posedge SYSCLK) begin
     // ----------------------------------------
     else if (state == txTRANS) begin
       if (SPC_SPIBUSY | SPC_RXVALID) begin
-        if (SPC_TXDETECT) begin
-          SPC_TXDATA <= TXDATA;
-          if (BORDER)
-            TXDPT <= TXDPT + 1;
-          else
-            TXDPT <= TXDPT - 1;
-        end
-
         if (SPC_RXVALID) begin
           RXDATA <= SPC_RXDATA;
           if (BORDER)

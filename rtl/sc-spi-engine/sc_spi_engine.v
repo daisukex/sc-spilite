@@ -169,6 +169,7 @@ sc_spi_spc spc (
   .RXDATA(SPC_RXDATA),
   .LRXDATA(SPC_LRXDATA),
   .RXVALID(SPC_RXVALID),
+  .RXDPT(/*open*/),
 
   // SPI Interface
   .CSB(CSB),

@@ -40,6 +40,7 @@ module sc_spi_spc (
   output reg [31:0] RXDATA,  // SPI Receive Data
   output [31:0] LRXDATA,     // SPI Last Receive Data
   output reg RXVALID,        // SPI Receive Data Valid
+  output reg [3:0] RXDPT,    // SPI Receive buffer pointer
 
   // SPI Interface
   output reg CSB,            // SPI Chip Select Signal
@@ -80,6 +81,7 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
     spist <= spiIDLE;
   end
   else begin
+    RXVALID <= 1'b0;
 
     // spiIDLE state
     // ----------------------------------------
@@ -122,9 +124,11 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
         fc <= fc + 1;
 
         // RX Data Control
+        if (bpos == 0)
+          RXDPT <= TXDPT;
         if (rxval) begin
           RXDATA <= rxdat;
-          RXVALID <= ~RXVALID;
+          RXVALID <= 1'b1;
         end
       end
     end

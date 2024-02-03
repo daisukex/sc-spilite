@@ -83,6 +83,7 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
     // spiIDLE state
     // ----------------------------------------
     if (spist == spiIDLE) begin
+      SPIBUSY <= 1'b0;
       if (SPISTART & !SPIBUSY) begin
         SPIBUSY <= 1'b1;
         fc <= 0;
@@ -112,10 +113,8 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
           fc <= 0;
           spist <= spiCSH;
         end
-        else begin
-          SPIBUSY <= 1'b0;
+        else
           spist <= spiIDLE;
-        end
       end
       else
         fc <= fc + 1;
@@ -126,7 +125,6 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
     else if (spist == spiCSH) begin
       if (fc == CSHOLD - 1) begin
         fc <= 0;
-        SPIBUSY <= 1'b0;
         spist <= spiIDLE;
       end
       else

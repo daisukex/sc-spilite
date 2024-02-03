@@ -61,7 +61,6 @@ wire SPICLK;
 wire CLK_ENABLE;
 wire CLK_ENABLE_SRCCLK;
 wire [7:0] CLK_CLKDR;
-wire CLK_SPICLK;
 wire CLK_SEL;
 wire [3:0] SPC_CSSETUP;
 wire [3:0] SPC_CSHOLD;
@@ -134,9 +133,8 @@ sc_spi_scg scg (
   .CLK_CLKDR(CLK_CLKDR),
   .CLK_MODE({SPC_CPOL, SPC_CPHA}),
   .CLK_ENABLE(CLK_ENABLE_SRCCLK),
-  .SPICLK(CLK_SPICLK)
+  .SPICLK(SPICLK)
 );
-assign SPICLK = (!CLK_ENABLE_SRCCLK) ? 1'b0: CLK_SPICLK;
 assign DATACLK = SPICLK;
 
 // ----------

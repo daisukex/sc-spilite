@@ -30,18 +30,6 @@ module sc_spi_scg (
 reg [7:0] clock_count;
 reg enable_p;
 
-
-// ----------
-// Clock start signal
-// --------------------------------------------------
-reg clkstart;
-always @ (negedge SRCCLK) begin
-  if (CLK_ENABLE)
-    clkstart <= 1'b1;
-  else
-    clkstart <= 1'b0;
-end
-
 // ----------
 // SPI Clock Generator
 // --------------------------------------------------

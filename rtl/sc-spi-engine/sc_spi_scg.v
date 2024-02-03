@@ -77,6 +77,8 @@ always @ (posedge SRCCLK) begin
           SPICLK <= 1'b0;
         else if ((CLK_MODE == 1 | CLK_MODE == 2) & clock_count == (CLK_CLKDR/2))
           SPICLK <= 1'b0;
+        else if ((CLK_MODE == 0 | CLK_MODE == 3) & clock_count == (CLK_CLKDR/2 - 1))
+          SPICLK <= 1'b0;
       end
     end
   end

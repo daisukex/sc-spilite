@@ -65,7 +65,8 @@ reg mosi_r, mosi_f;                 // SPI Master Out, Slave In
 reg [4:0] frxc_r, frxc_f;           // SPI Frame RX Data Count
 reg [31:0] rxdat, rxdat_r, rxdat_f; // SPI RX Data
 reg rxval, rxval_r, rxval_f;        // SPI RX Valid
-wire [4:0] bpos;                    // Bit Position
+wire [4:0] bpos_tx, bpos;           // Bit Position
+assign bpos_tx = fc2bit(BORDER, fc, DWIDTH);
 assign bpos = fc2bit(BORDER, fc, DWIDTH);
 assign TXDPT = fc2word(BORDER, fc, DWIDTH);
 
@@ -177,7 +178,7 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
 
     // SPI TX/RX Data
     if (spist == spiDATA) begin
-      mosi_r <= TXDATA[bpos];
+      mosi_r <= TXDATA[bpos_tx];
       frxc_r <= fc;
     end
     else
@@ -216,7 +217,7 @@ always @ (negedge SPICLK or negedge SYSRSTB) begin
 
     // SPI TX/RX Data
     if (spist == spiDATA) begin
-      mosi_f <= TXDATA[bpos];
+      mosi_f <= TXDATA[bpos_tx];
       frxc_f <= fc;
     end
     else

@@ -65,7 +65,7 @@ reg mosi_r, mosi_f;                 // SPI Master Out, Slave In
 reg [4:0] frxc_r, frxc_f;           // SPI Frame RX Data Count
 reg [31:0] rxdat, rxdat_r, rxdat_f; // SPI RX Data
 reg rxval, rxval_r, rxval_f;        // SPI RX Valid
-wire [4:0] bpos_tx;                 // Bit Position
+wire [4:0] bpos_tx, bpos_r, bpos_f; // Bit Position
 reg [4:0] bpos_rx;
 assign bpos_tx = fc2bit(BORDER, fc, DWIDTH);
 assign TXDPT = fc2word(BORDER, fc, DWIDTH);
@@ -186,12 +186,13 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
 
     // SPI RX Data
     if (clken_f) begin
-      rxdat_r[fc2bit(BORDER, frxc_f, DWIDTH)] <= MISO;
+      rxdat_r[bpos_rx] <= MISO;
       if ((!BORDER & bpos_rx == 0) | (BORDER & bpos_rx == 24))
         rxval_r <= 1'b1;
     end
   end
 end
+assign bpos_r = fc2bit(BORDER, frxc_r, DWIDTH);
 
 // Synchronous Falling Clock
 always @ (negedge SPICLK or negedge SYSRSTB) begin
@@ -225,12 +226,13 @@ always @ (negedge SPICLK or negedge SYSRSTB) begin
 
     // SPI RX Data
     if (clken_r) begin
-      rxdat_f[fc2bit(BORDER, frxc_r, DWIDTH)] <= MISO;
+      rxdat_f[bpos_rx] <= MISO;
       if ((!BORDER & bpos_rx == 0) | (BORDER & bpos_rx == 24))
         rxval_f <= 1'b1;
     end
   end
 end
+assign bpos_f = fc2bit(BORDER, frxc_f, DWIDTH);
 
 always @ (*) begin
   case ({CPOL, CPHA})
@@ -240,7 +242,7 @@ always @ (*) begin
       MOSI = mosi_f;
       rxdat = rxdat_r;
       rxval = rxval_r;
-      bpos_rx = fc2bit(BORDER, frxc_f, DWIDTH);
+      bpos_rx = bpos_f;
     end
     1: begin
       CSB  = ~cs_r;
@@ -248,7 +250,7 @@ always @ (*) begin
       MOSI = mosi_r;
       rxdat = rxdat_f;
       rxval = rxval_f;
-      bpos_rx = fc2bit(BORDER, frxc_r, DWIDTH);
+      bpos_rx = bpos_r;
     end
     2: begin
       CSB  = ~cs_r;
@@ -256,7 +258,7 @@ always @ (*) begin
       MOSI = mosi_r;
       rxdat = rxdat_f;
       rxval = rxval_f;
-      bpos_rx = fc2bit(BORDER, frxc_r, DWIDTH);
+      bpos_rx = bpos_r;
     end
     default: begin
       CSB  = ~cs_f;
@@ -264,7 +266,7 @@ always @ (*) begin
       MOSI = mosi_f;
       rxdat <= rxdat_r;
       rxval <= rxval_r;
-      bpos_rx = fc2bit(BORDER, frxc_f, DWIDTH);
+      bpos_rx = bpos_f;
     end
   endcase
 end

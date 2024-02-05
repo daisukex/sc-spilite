@@ -142,7 +142,7 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
     RXVALID <= 1'b0;
   else begin
     RXVALID <= 1'b0;
-    if (bpos_rx == 0)
+    if (spist == spiDATA & bpos_tx == 0)
       RXDPT <= TXDPT;
     if (rxval) begin
       RXDATA <= rxdat;

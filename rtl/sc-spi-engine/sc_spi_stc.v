@@ -25,7 +25,8 @@ module sc_spi_stc (
 
   // SPI Signal from Register
   // ------------------------
-  input [7:0] CLKDR,            // Clock Divide Rate
+  input [7:0] CLKHIGH,          // Clock High Width
+  input [7:0] CLKLOW,           // Clock Low Width
   input [3:0] CSSETUP,          // CSB Setup
   input [3:0] CSHOLD,           // CSB Hold
   input [8:0] DWIDTH,           // Data Width
@@ -41,7 +42,8 @@ module sc_spi_stc (
   // SPI Signal to SCG
   // -----------------------
   output reg CLK_ENABLE,
-  output reg [7:0] CLK_CLKDR,
+  output reg [7:0] CLK_WIDTH_HIGH,
+  output reg [7:0] CLK_WIDTH_LOW,
 
   // SPI Signal to SPC
   // -----------------------
@@ -98,7 +100,8 @@ always @ (posedge SYSCLK) begin
         SPC_CPHA <= CPHA;
         SPC_CSEXTEND <= CSEXTEND;
         SPC_BORDER <= BORDER;
-        CLK_CLKDR <= CLKDR;
+        CLK_WIDTH_HIGH <= CLKHIGH;
+        CLK_WIDTH_LOW <= CLKLOW;
         state <= txSETUP;
       end
     end

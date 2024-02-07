@@ -21,7 +21,8 @@
 module sc_spi_scg (
   input SRCCLK,
   input SYSRSTB,
-  input [7:0] CLK_CLKDR,
+  input [7:0] CLK_WIDTH_HIGH,
+  input [7:0] CLK_WIDTH_LOW,
   input [1:0] CLK_MODE,
   input CLK_ENABLE,
   (* dont_touch = "yes" *) output reg SPICLK
@@ -55,17 +56,13 @@ always @ (posedge SRCCLK) begin
 
     // clock active state
     else begin
-      if (clock_count == CLK_CLKDR -1) begin
+      if (clock_count == (CLK_WIDTH_LOW + CLK_WIDTH_HIGH) -1) begin
         SPICLK <= 1'b1;
         clock_count <= 0;
       end
       else begin
         clock_count <= clock_count + 1;
-        if (((CLK_CLKDR %2) == 0) & clock_count == (CLK_CLKDR/2 - 1))
-          SPICLK <= 1'b0;
-        else if ((CLK_MODE == 1 | CLK_MODE == 2) & clock_count == (CLK_CLKDR/2))
-          SPICLK <= 1'b0;
-        else if ((CLK_MODE == 0 | CLK_MODE == 3) & clock_count == (CLK_CLKDR/2 - 1))
+        if (clock_count == (CLK_WIDTH_HIGH - 1))
           SPICLK <= 1'b0;
       end
     end

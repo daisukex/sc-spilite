@@ -46,7 +46,8 @@ module sc_spil_reg
   input [31:0] RXDATA,
   input [3:0] RXDPT,
   input RXVALID,
-  output [7:0] CLKDR,
+  output logic [7:0] CLKHIGH,
+  output logic [7:0] CLKLOW,
   output [3:0] CSSETUP,
   output [3:0] CSHOLD,
   output [8:0] DWIDTH,
@@ -112,7 +113,27 @@ assign CSHOLD = strf.CSHOLD;
 assign CSSETUP = strf.CSSETUP;
 assign CPHA = strf.CPHA;
 assign CPOL = strf.CPOL;
-assign CLKDR = (strf.CLKDR < 2) ? 2: strf.CLKDR;
+
+logic [7:0] divrate;
+assign divrate = (strf.CLKDR < 2) ? 2: strf.CLKDR;
+always @ (*) begin
+  if ((divrate %2) == 0) begin
+    CLKHIGH = divrate/2;
+    CLKLOW  = divrate/2;
+  end
+  else begin
+    case ({CPOL, CPHA})
+      0, 3: begin
+        CLKHIGH = divrate/2;
+        CLKLOW  = divrate/2 + 1;
+      end
+      1, 2: begin
+        CLKHIGH = divrate/2 + 1;
+        CLKLOW  = divrate/2;
+      end
+    endcase
+  end
+end
 
 // ----
 // SPI Lite Interrupt Status Register

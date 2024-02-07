@@ -27,7 +27,8 @@ module sc_spi_engine (
 
   // SPI Signal from Register
   // ------------------------
-  input [7:0] CLKDR,
+  input [7:0] CLKHIGH,
+  input [7:0] CLKLOW,
   input [3:0] CSSETUP,
   input [3:0] CSHOLD,
   input [8:0] DWIDTH,
@@ -60,7 +61,8 @@ module sc_spi_engine (
 wire SPICLK;
 wire CLK_ENABLE;
 wire CLK_ENABLE_SRCCLK;
-wire [7:0] CLK_CLKDR;
+wire [7:0] CLK_WIDTH_HIGH;
+wire [7:0] CLK_WIDTH_LOW;
 wire CLK_SEL;
 wire [3:0] SPC_CSSETUP;
 wire [3:0] SPC_CSHOLD;
@@ -82,7 +84,8 @@ sc_spi_stc stc (
   .SYSRSTB(SYSRSTB),
 
   // SPI Signal from Register
-  .CLKDR(CLKDR),
+  .CLKHIGH(CLKHIGH),
+  .CLKLOW(CLKLOW),
   .CSSETUP(CSSETUP),
   .CSHOLD(CSHOLD),
   .DWIDTH(DWIDTH),
@@ -97,7 +100,8 @@ sc_spi_stc stc (
 
   // SPI Signal to SCG
   .CLK_ENABLE(CLK_ENABLE),
-  .CLK_CLKDR(CLK_CLKDR),
+  .CLK_WIDTH_HIGH(CLK_WIDTH_HIGH),
+  .CLK_WIDTH_LOW(CLK_WIDTH_LOW),
 
   // SPI Signal to SPC
   .SPC_CSSETUP(SPC_CSSETUP),
@@ -130,7 +134,8 @@ sc_spi_sss sss (
 sc_spi_scg scg (
   .SRCCLK(SRCCLK),
   .SYSRSTB(SYSRSTB),
-  .CLK_CLKDR(CLK_CLKDR),
+  .CLK_WIDTH_HIGH(CLK_WIDTH_HIGH),
+  .CLK_WIDTH_LOW(CLK_WIDTH_LOW),
   .CLK_MODE({SPC_CPOL, SPC_CPHA}),
   .CLK_ENABLE(CLK_ENABLE_SRCCLK),
   .SPICLK(SPICLK)

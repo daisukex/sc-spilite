@@ -51,22 +51,21 @@ module sc_spi_spc (
 // ----------
 // Internal Signal Declaration
 // --------------------------------------------------
+reg fvalid;                         // Frame Valid signal
 reg [1:0] spist;                    // SPI State
 localparam spiIDLE = 0,             // - IDLE State
            spiCSS  = 1,             // - Chip Select Setup State
            spiDATA = 2,             // - Data Transfer State
            spiCSH  = 3;             // - Chip Select Hold State
-reg [8:0] fc;                       // - SPI Frame Count
+reg [8:0] fc, fc_rx;                // - SPI Frame Count
 
 // SPI signal
 reg clken_r, clken_f;               // SPI Clock Enable
 reg cs_r, cs_f;                     // SPI Chip Select 
 reg mosi_r, mosi_f;                 // SPI Master Out, Slave In
-reg [4:0] frxc_r, frxc_f;           // SPI Frame RX Data Count
-reg [31:0] rxdat, rxdat_r, rxdat_f; // SPI RX Data
-reg rxval, rxval_r, rxval_f;        // SPI RX Valid
-wire [4:0] bpos_tx, bpos_r, bpos_f; // Bit Position
-reg [4:0] bpos_rx;
+reg rxdat, rxdat_r, rxdat_f;        // SPI RX Data (1 bit)
+reg [31:0] rxdpara;                 // SPI RX Data (Parallel)
+wire [4:0] bpos_tx, bpos_rx;        // Bit Position
 assign bpos_tx = fc2bit(BORDER, fc, DWIDTH);
 assign TXDPT = fc2word(BORDER, fc, DWIDTH);
 
@@ -137,16 +136,31 @@ end
 // ----------
 // RX Data Control
 // --------------------------------------------------
+assign bpos_rx = fc2bit(BORDER, fc_rx, DWIDTH);
 always @ (posedge SPICLK or negedge SYSRSTB) begin
-  if (!SYSRSTB)
+  if (!SYSRSTB) begin
+    rxdpara <= 32'h0000_0000;
+    fvalid <= 1'b0;
+    fc_rx <= 0;
     RXVALID <= 1'b0;
+  end
   else begin
     RXVALID <= 1'b0;
-    if (spist == spiDATA & bpos_tx == 0)
-      RXDPT <= TXDPT;
-    if (rxval) begin
-      RXDATA <= rxdat;
-      RXVALID <= 1'b1;
+
+    if (fvalid & fc_rx == DWIDTH)
+      fvalid <= 1'b0;
+    else if (spist == spiDATA)
+      fvalid <= 1'b1;
+
+    rxdpara[bpos_rx] <= rxdat;
+
+    if (fvalid) begin
+      fc_rx <= fc;
+      if ((!BORDER & bpos_rx == 0) | (BORDER & bpos_rx == 24)) begin
+        RXDPT <= fc2word(BORDER, fc_rx, DWIDTH);
+        RXDATA <= {rxdpara[31:1], rxdat};
+        RXVALID <= 1'b1;
+      end
     end
   end
 end
@@ -160,12 +174,9 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
     clken_r <= 1'b0;
     cs_r <= 1'b0;
     mosi_r <= 1'b0;
-    frxc_r <= 0;
     rxdat_r <= 0;
-    rxval_r <= 1'b0;
   end
   else begin
-    rxval_r <= 1'b0;
 
     // Chip Select
     if (spist == spiCSS | spist == spiDATA)
@@ -177,22 +188,16 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
     clken_r <= (spist == spiDATA);
 
     // SPI TX/RX Data
-    if (spist == spiDATA) begin
+    if (spist == spiDATA)
       mosi_r <= TXDATA[bpos_tx];
-      frxc_r <= fc;
-    end
     else
       mosi_r <= 1'b0;
 
     // SPI RX Data
-    if (clken_f) begin
-      rxdat_r[bpos_rx] <= MISO;
-      if ((!BORDER & bpos_rx == 0) | (BORDER & bpos_rx == 24))
-        rxval_r <= 1'b1;
-    end
+    if (clken_f)
+      rxdat_r <= MISO;
   end
 end
-assign bpos_r = fc2bit(BORDER, frxc_r, DWIDTH);
 
 // Synchronous Falling Clock
 always @ (negedge SPICLK or negedge SYSRSTB) begin
@@ -200,12 +205,9 @@ always @ (negedge SPICLK or negedge SYSRSTB) begin
     clken_f <= 1'b0;
     cs_f <= 1'b0;
     mosi_f <= 1'b0;
-    frxc_f <= 0;
     rxdat_f <= 0;
-    rxval_f <= 1'b0;
   end
   else begin
-    rxval_f <= 1'b0;
 
     // Chip Select
     if (spist == spiCSS | spist == spiDATA)
@@ -217,22 +219,16 @@ always @ (negedge SPICLK or negedge SYSRSTB) begin
     clken_f <= (spist == spiDATA);
 
     // SPI TX/RX Data
-    if (spist == spiDATA) begin
+    if (spist == spiDATA)
       mosi_f <= TXDATA[bpos_tx];
-      frxc_f <= fc;
-    end
     else
       mosi_f <= 1'b0;
 
     // SPI RX Data
-    if (clken_r) begin
-      rxdat_f[bpos_rx] <= MISO;
-      if ((!BORDER & bpos_rx == 0) | (BORDER & bpos_rx == 24))
-        rxval_f <= 1'b1;
-    end
+    if (clken_r)
+      rxdat_f <= MISO;
   end
 end
-assign bpos_f = fc2bit(BORDER, frxc_f, DWIDTH);
 
 always @ (*) begin
   case ({CPOL, CPHA})
@@ -241,32 +237,24 @@ always @ (*) begin
       SCLK = (clken_f) ? SPICLK: 1'b0;
       MOSI = mosi_f;
       rxdat = rxdat_r;
-      rxval = rxval_r;
-      bpos_rx = bpos_f;
     end
     1: begin
       CSB  = ~cs_r;
       SCLK = (clken_r) ? SPICLK: 1'b0;
       MOSI = mosi_r;
       rxdat = rxdat_f;
-      rxval = rxval_f;
-      bpos_rx = bpos_r;
     end
     2: begin
       CSB  = ~cs_r;
       SCLK = (clken_r) ? SPICLK: 1'b1;
       MOSI = mosi_r;
       rxdat = rxdat_f;
-      rxval = rxval_f;
-      bpos_rx = bpos_r;
     end
     default: begin
       CSB  = ~cs_f;
       SCLK = (clken_f) ? SPICLK: 1'b1;
       MOSI = mosi_f;
       rxdat <= rxdat_r;
-      rxval <= rxval_r;
-      bpos_rx = bpos_f;
     end
   endcase
 end

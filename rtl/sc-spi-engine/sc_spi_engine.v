@@ -18,7 +18,9 @@
 //  Module: SPI Protocol Engine Top (sc_spi_engine)
 //-----------------------------------------------------------------------------
 
-module sc_spi_engine (
+module sc_spi_engine # (
+  parameter NUM_OF_CS = 32
+) (
   // System Control
   // ------------------------
   input SYSCLK,
@@ -38,6 +40,7 @@ module sc_spi_engine (
   input BORDER,
   input TXSTART,
   input CSEXTEND,
+  input [4:0] CSSEL,
   output SPIBUSY,
   output SPICOMPLETE,
 
@@ -52,7 +55,7 @@ module sc_spi_engine (
 
   // SPI Interface
   // ------------------------
-  output CSB,
+  output [NUM_OF_CS-1:0] CSB,
   output SCLK,
   output MOSI,
   input MISO
@@ -73,6 +76,7 @@ wire SPC_SPISTART;
 wire SPC_SPIBUSY;
 wire SPC_SPIBUSY_SYSCLK;
 wire SPC_CSEXTEND;
+wire [4:0] SPC_CSSEL;
 wire SPC_BORDER;
 
 // ----------
@@ -94,6 +98,7 @@ sc_spi_stc stc (
 
   .TXSTART(TXSTART),
   .CSEXTEND(CSEXTEND),
+  .CSSEL(CSSEL),
   .BORDER(BORDER),
   .SPIBUSY(SPIBUSY),
   .SPICOMPLETE(SPICOMPLETE),
@@ -113,6 +118,7 @@ sc_spi_stc stc (
   .SPC_SPISTART(SPC_SPISTART),
   .SPC_SPIBUSY(SPC_SPIBUSY_SYSCLK),
   .SPC_CSEXTEND(SPC_CSEXTEND),
+  .SPC_CSSEL(SPC_CSSEL),
   .SPC_BORDER(SPC_BORDER)
 );
 
@@ -145,7 +151,9 @@ assign DATACLK = SPICLK;
 // ----------
 // SPI Protocol Controller
 // --------------------------------------------------
-sc_spi_spc spc (
+sc_spi_spc # (
+  .NUM_OF_CS(NUM_OF_CS)
+) spc (
   // System Control
   .SPICLK(SPICLK),
   .SYSRSTB(SYSRSTB),
@@ -159,6 +167,7 @@ sc_spi_spc spc (
 
   // TX/RX Data
   .CSEXTEND(SPC_CSEXTEND),
+  .CSSEL(SPC_CSSEL),
   .SPISTART(SPC_SPISTART),
   .SPIBUSY(SPC_SPIBUSY),
   .BORDER(SPC_BORDER),

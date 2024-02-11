@@ -92,7 +92,6 @@ logic TXSTART;
 logic [31:0] RXDATA;
 logic SPICOMPLETE;
 logic SPIBUSY;
-logic CSB_IN;
 
 sc_ahbip_slave # (
   .CYCLE_MODE(1)
@@ -146,7 +145,9 @@ sc_spil_reg # (
   .CPHA(REG_CPHA)
 );
 
-sc_spi_engine spi_engine (
+sc_spi_engine # (
+  .NUM_OF_CS(NUM_OF_CS)
+) spi_engine (
   .SYSCLK(HCLK),
   .SRCCLK(SRCCLK),
   .SYSRSTB(HRESETN),
@@ -160,6 +161,7 @@ sc_spi_engine spi_engine (
   .CPHA(REG_CPHA),
   .TXSTART(REG_TXSTART),
   .CSEXTEND(REG_CSEXTEND),
+  .CSSEL(REG_CSSEL),
   .BORDER(REG_BORDER),
 
   .DATACLK(DATACLK),
@@ -170,16 +172,8 @@ sc_spi_engine spi_engine (
   .RXVALID(REG_RXVALID),
   .SPIBUSY(REG_SPIBUSY),
   .SPICOMPLETE(REG_SPICOMPLETE),
-  .CSB(CSB_IN),
+  .CSB(CSB),
   .*
-);
-
-sc_spil_scd # (
-  .NUM_OF_CS(NUM_OF_CS)
-) spil_scd (
-  .CS_SEL(REG_CSSEL),
-  .CSB_IN(CSB_IN),
-  .CSB_OUT(CSB)
 );
 
 endmodule

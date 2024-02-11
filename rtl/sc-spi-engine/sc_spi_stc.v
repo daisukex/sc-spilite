@@ -36,6 +36,7 @@ module sc_spi_stc (
   input BORDER,
   input TXSTART,
   input CSEXTEND,
+  input [4:0] CSSEL,
   output reg SPIBUSY,
   output reg SPICOMPLETE,
 
@@ -56,6 +57,7 @@ module sc_spi_stc (
   output reg SPC_SPISTART,
   input SPC_SPIBUSY,
   output reg SPC_CSEXTEND,
+  output reg [4:0] SPC_CSSEL,
   output reg SPC_BORDER
 );
 
@@ -99,6 +101,7 @@ always @ (posedge SYSCLK) begin
         SPC_CPOL <= CPOL;
         SPC_CPHA <= CPHA;
         SPC_CSEXTEND <= CSEXTEND;
+        SPC_CSSEL <= CSSEL;
         SPC_BORDER <= BORDER;
         CLK_WIDTH_HIGH <= CLKHIGH;
         CLK_WIDTH_LOW <= CLKLOW;

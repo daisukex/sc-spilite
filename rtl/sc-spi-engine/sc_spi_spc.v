@@ -18,7 +18,9 @@
 //  Module: SPI Protocol Controller (sc_spi_spc)
 //-----------------------------------------------------------------------------
 
-module sc_spi_spc (
+module sc_spi_spc # (
+  parameter NUM_OF_CS = 32
+) (
   // System Control
   input SPICLK,
   input SYSRSTB,
@@ -32,6 +34,7 @@ module sc_spi_spc (
 
   // SPI Control Interface
   input CSEXTEND,            // CS Extend signal
+  input [4:0] CSSEL,
   input SPISTART,            // SPI Transfer Start
   output reg SPIBUSY,        // SPI Busy
   input BORDER,              // SPI Byte Order
@@ -42,7 +45,8 @@ module sc_spi_spc (
   output reg [3:0] RXDPT,    // SPI Receive buffer pointer
 
   // SPI Interface
-  output reg CSB,            // SPI Chip Select Signal
+  output reg [NUM_OF_CS-1:0] CSB,
+                             // SPI Chip Select Signal
   output reg SCLK,           // SPI Clock Signal
   output reg MOSI,           // SPI Master Out, Slave In
   input MISO                 // SPI Master In, Slave Out
@@ -61,7 +65,7 @@ reg [8:0] fc, fc_rx;                // - SPI Frame Count
 
 // SPI signal
 reg clken_r, clken_f;               // SPI Clock Enable
-reg cs_r, cs_f;                     // SPI Chip Select 
+reg [NUM_OF_CS-1:0] cs_r, cs_f;     // SPI Chip Select
 reg mosi_r, mosi_f;                 // SPI Master Out, Slave In
 reg rxdat, rxdat_r, rxdat_f;        // SPI RX Data (1 bit)
 reg [31:0] rxdpara;                 // SPI RX Data (Parallel)
@@ -180,9 +184,9 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
 
     // Chip Select
     if (spist == spiCSS | spist == spiDATA)
-      cs_r <= 1'b1;
+      cs_r[CSSEL] <= 1'b1;
     else if (!CSEXTEND & spist == spiIDLE)
-      cs_r <= 1'b0;
+      cs_r <= 0;
 
     // Clock Enable
     clken_r <= (spist == spiDATA);
@@ -211,7 +215,7 @@ always @ (negedge SPICLK or negedge SYSRSTB) begin
 
     // Chip Select
     if (spist == spiCSS | spist == spiDATA)
-      cs_f <= 1'b1;
+      cs_f[CSSEL] <= 1'b1;
     else if (!CSEXTEND & spist == spiIDLE)
       cs_f <= 1'b0;
 

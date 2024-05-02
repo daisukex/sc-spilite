@@ -156,9 +156,8 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
     else if (spist == spiDATA)
       fvalid <= 1'b1;
 
-    rxdpara[bpos_rx] <= rxdat;
-
     if (fvalid) begin
+      rxdpara[bpos_rx] <= rxdat;
       fc_rx <= fc;
       if ((!BORDER & bpos_rx == 0) | (BORDER & bpos_rx == 24)) begin
         RXDPT <= fc2word(BORDER, fc_rx, DWIDTH);

@@ -198,8 +198,7 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
       mosi_r <= 1'b0;
 
     // SPI RX Data
-    if (clken_f)
-      rxdat_r <= MISO;
+    rxdat_r <= MISO;
   end
 end
 
@@ -229,8 +228,7 @@ always @ (negedge SPICLK or negedge SYSRSTB) begin
       mosi_f <= 1'b0;
 
     // SPI RX Data
-    if (clken_r)
-      rxdat_f <= MISO;
+    rxdat_f <= MISO;
   end
 end
 

@@ -151,14 +151,11 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
   else begin
     RXVALID <= 1'b0;
 
-    if (fvalid & fc_rx == DWIDTH)
-      fvalid <= 1'b0;
-    else if (spist == spiDATA)
-      fvalid <= 1'b1;
-
     if (fvalid) begin
       rxdpara[bpos_rx] <= rxdat;
       fc_rx <= fc;
+      if (fc_rx == DWIDTH)
+        fvalid <= 1'b0;
       if ((!BORDER & bpos_rx == 0) | (BORDER & bpos_rx == 24)) begin
         RXDPT <= fc2word(BORDER, fc_rx, DWIDTH);
         RXDATA <= {rxdpara[31:1], rxdat};
@@ -167,6 +164,8 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
     end
     else if (spist == spiIDLE)
       rxdpara <= 32'h0000_0000;
+    else if (spist == spiDATA)
+      fvalid <= 1'b1;
   end
 end
 

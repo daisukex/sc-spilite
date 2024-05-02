@@ -165,6 +165,8 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
         RXVALID <= 1'b1;
       end
     end
+    else if (spist == spiIDLE)
+      rxdpara <= 32'h0000_0000;
   end
 end
 

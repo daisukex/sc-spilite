@@ -234,17 +234,29 @@ end
 
 always @ (*) begin
   case ({CPOL, CPHA})
-    0, 3: begin
+    0: begin
       CSB  = ~cs_f;
       SCLK = (clken_f) ? SPICLK: 1'b0;
       MOSI = mosi_f;
       rxdat = rxdat_r;
     end
-    default: begin
+    1: begin
       CSB  = ~cs_r;
       SCLK = (clken_r) ? SPICLK: 1'b0;
       MOSI = mosi_r;
       rxdat = rxdat_f;
+    end
+    2: begin
+      CSB  = ~cs_r;
+      SCLK = (clken_r) ? SPICLK: 1'b1;
+      MOSI = mosi_r;
+      rxdat = rxdat_f;
+    end
+    default: begin
+      CSB  = ~cs_f;
+      SCLK = (clken_f) ? SPICLK: 1'b1;
+      MOSI = mosi_f;
+      rxdat = rxdat_r;
     end
   endcase
 end

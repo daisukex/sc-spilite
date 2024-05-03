@@ -22,9 +22,12 @@ class ahbm_driver extends uvm_driver #(bus_seq_item);
         vif.haddr <= req.addr;
         vif.hwrite <= req.rd0wr1;
         @(posedge vif.hclk);
-        vif.hwdata  <= req.wdata;
+        if (vif.hwrite)
+          vif.hwdata  <= req.wdata;
         @(posedge vif.hclk);
         rsp = new();
+        if (!vif.hwrite)
+          rsp.rdata <= vif.hrdata;
         rsp.set_id_info(req);
         seq_item_port.put(rsp);
       end

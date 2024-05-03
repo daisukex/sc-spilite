@@ -1,6 +1,7 @@
 `include "bus_seq_item.sv"
 `include "bus_seq_base.sv"
 `include "bus_single_write_seq.sv"
+`include "bus_single_read_seq.sv"
 `include "bus_sequencer.sv"
 `include "ahbm_driver.sv"
 `include "ahbm_agent.sv"

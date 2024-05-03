@@ -38,6 +38,11 @@ TB_TOP                  := tb_top
 TB_LIST_FILE            := ./tbench/tb.list
 TB_LIST                 := $(shell cat $(TB_LIST_FILE))
 
+INC_DIR                 := tbench tbench/ahb-model
+ifdef INC_DIR
+	INC_DIR             := $(foreach dir,$(INC_DIR),$(addprefix -i ,$(dir)))
+endif
+
 # Simulation Directory and files
 #-------------------------------
 XDB_DIR                 := xsim.dir
@@ -73,7 +78,7 @@ tb_compile: $(TB_TOP).sdb
 
 $(TB_TOP).sdb: $(TB_LIST)
 	$(MKDIR) $(LOG_DIR)
-	$(SVLOG) -log $(LOG_DIR)/tb_compile.log -f $(TB_LIST_FILE)
+	$(SVLOG) $(INC_DIR) -log $(LOG_DIR)/tb_compile.log -f $(TB_LIST_FILE)
 
 
 # Elaborate

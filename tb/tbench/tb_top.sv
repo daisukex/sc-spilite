@@ -37,6 +37,12 @@ initial forever begin
   hclk = ~hclk;
 end
 
+initial begin
+  hresetn = 0;
+  #100000;
+  hresetn = 1;
+end
+
 sc_spilite # (
   .NUM_OF_CS(32),
   .NUM_OF_BUF(1)

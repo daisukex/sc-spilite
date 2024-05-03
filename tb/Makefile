@@ -17,6 +17,11 @@
 # Simulation Setting
 #------------------------
 WAVE      := on
+TESTCASE  := spil_test
+
+ifdef TESTCASE
+	TESTCASE            := --testplusarg \"UVM_TESTNAME=$(TESTCASE)\"
+endif
 
 # Command variables
 #------------------------
@@ -94,9 +99,9 @@ simulation: $(XSIMK_FILE)
     ifeq ($(WAVE),on)
 		$(MKDIR) $(WAV_DIR)
 		echo "log_wave -r /; run -all; exit" > $(SIM_SCRIPT)
-		$(SIM) --log $(LOG_DIR)/$(TB_TOP)_sim.log -wdb $(WAV_DIR)/$(TB_TOP).wdb -t $(SIM_SCRIPT) $(TB_TOP)
+		$(SIM) --log $(LOG_DIR)/$(TB_TOP)_sim.log -wdb $(WAV_DIR)/$(TB_TOP).wdb -t $(SIM_SCRIPT) $(TESTCASE) $(TB_TOP)
     else
-		$(SIM) --log $(LOG_DIR)/$(TB_TOP)_sim.log -R $(TB_TOP)
+		$(SIM) --log $(LOG_DIR)/$(TB_TOP)_sim.log -R $(TESTCASE) $(TB_TOP)
     endif
 
 

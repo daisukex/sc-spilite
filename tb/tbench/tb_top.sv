@@ -30,6 +30,7 @@ bit hclk;
 logic hsel;
 
 amba_ahb_if ahbif (.hclk(hclk), .hresetn(hresetn));
+assign hsel = (ahbif.haddr[31:16] == 16'h4F00 & ahbif.htrans != 2'b00);
 
 // AHB Clock
 initial forever begin

@@ -14,7 +14,8 @@ class bus_single_read_seq extends bus_seq_base;
       req.rd0wr1 == 1'b0;
       req.addr   == local::addr;
       req.size   == local::size;
-    });
+    })
+//    get_response(rsp, req.get_transaction_id());
     get_response(rsp);
     rdata = rsp.rdata;
     $display("[%t] addr: 0x%h data: 0x%h", $time, addr, rdata);

@@ -15,21 +15,30 @@ class ahbm_driver extends uvm_driver #(bus_seq_item);
   endfunction
 
   virtual task run_phase(uvm_phase phase);
+    vif.haddr <= 32'h0;
+    vif.hwrite <= 1'b0;
+    vif.htrans <= 2'b0;
+    vif.hsize <= 3'b0;
+    vif.hburst <= 3'h0;
     forever begin
       if ( vif.hresetn ) begin
-        seq_item_port.get(req);
+        seq_item_port.get_next_item(req);
         @(posedge vif.hclk);
         vif.haddr <= req.addr;
         vif.hwrite <= req.rd0wr1;
+        vif.htrans <= 2'b10;
+        vif.hsize <= req.size;
+        vif.hburst <= 3'h000;
         @(posedge vif.hclk);
+        vif.htrans <= 2'b00;
         if (vif.hwrite)
           vif.hwdata  <= req.wdata;
         @(posedge vif.hclk);
         rsp = new();
-        if (!vif.hwrite)
-          rsp.rdata <= vif.hrdata;
         rsp.set_id_info(req);
-        seq_item_port.put(rsp);
+        if (!vif.hwrite)
+          rsp.rdata = vif.hrdata;
+        seq_item_port.item_done(rsp);
       end
       else
         @(posedge vif.hresetn);

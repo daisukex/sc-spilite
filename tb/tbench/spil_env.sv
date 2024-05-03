@@ -9,7 +9,7 @@ class spil_env extends uvm_env;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    ahbm = ahbm_agent::type_id::create("ahbm_agent", this);
+    ahbm = ahbm_agent::type_id::create("ahbm", this);
   endfunction
 
 endclass

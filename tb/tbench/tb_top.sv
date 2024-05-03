@@ -65,6 +65,7 @@ sc_spilite # (
 );
 
 initial begin
+  uvm_config_db#(virtual amba_ahb_if)::set(uvm_root::get(), "*.env.ahbm.*", "vif", ahbif);
   run_test();
 end
 

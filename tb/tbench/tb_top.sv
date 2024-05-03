@@ -16,8 +16,12 @@
 
 `timescale 1ps/1ps
 module tb_top;
-
+`include "uvm_macros.svh"
 import uvm_pkg::*;
+`include "ahbm_models.sv"
+`include "spil_env.sv"
+`include "spil_test.sv"
+
 
 parameter HCLK_PERIOD = 10417;
 
@@ -61,8 +65,7 @@ sc_spilite # (
 );
 
 initial begin
-  repeat (100) @ (posedge hclk);
-  $finish();
+  run_test();
 end
 
 endmodule

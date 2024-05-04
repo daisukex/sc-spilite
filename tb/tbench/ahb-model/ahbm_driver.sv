@@ -24,16 +24,25 @@ class ahbm_driver extends uvm_driver #(bus_seq_item);
       if ( vif.hresetn ) begin
         seq_item_port.get_next_item(req);
         @(posedge vif.hclk);
+
+        // Address Phase
         vif.haddr <= req.addr;
         vif.hwrite <= req.rd0wr1;
         vif.htrans <= 2'b10;
         vif.hsize <= req.size;
         vif.hburst <= 3'h000;
-        @(posedge vif.hclk);
+        do
+          @(posedge vif.hclk);
+        while(!vif.hready);
+
+        // Data Phase
         vif.htrans <= 2'b00;
         if (vif.hwrite)
           vif.hwdata  <= req.wdata;
-        @(posedge vif.hclk);
+        do
+          @(posedge vif.hclk);
+        while(!vif.hready);
+
         rsp = new();
         rsp.set_id_info(req);
         if (!vif.hwrite)

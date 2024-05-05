@@ -12,7 +12,7 @@ class spil_test extends uvm_test;
     env = spil_env::type_id::create("env", this);
     uvm_config_db#(uvm_object_wrapper)::set(this,
       "env.ahbm.sequencer.run_phase", "default_sequence",
-      bus_single_read_seq::type_id::get());
+      bus_access_seq::type_id::get());
   endfunction
 
   task run_phase(uvm_phase phase);

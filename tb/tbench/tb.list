@@ -1,2 +1,3 @@
+tbench/sc-uvm/sc_uvm_message_pkg.sv
 tbench/amba_ahb_if.sv
 tbench/tb_top.sv

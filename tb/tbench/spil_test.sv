@@ -15,6 +15,12 @@ class spil_test extends uvm_test;
       bus_access_seq::type_id::get());
   endfunction
 
+  function void start_of_simulation_phase(uvm_phase phase);
+    sc_report_server sc_server = new;
+    super.start_of_simulation_phase(phase);
+    uvm_report_server::set_server(sc_server);
+  endfunction
+
   task run_phase(uvm_phase phase);
     uvm_top.print_topology();
   endtask

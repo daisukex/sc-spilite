@@ -18,6 +18,7 @@
 module tb_top;
 `include "uvm_macros.svh"
 import uvm_pkg::*;
+import sc_uvm_message_pkg::*;
 `include "ahbm_models.sv"
 `include "spil_env.sv"
 `include "spil_test.sv"

@@ -170,6 +170,8 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
     rxdpara <= 32'h0000_0000;
     fvalid <= 1'b0;
     fc_rx <= 0;
+    RXDATA <= 32'h0000_0000;
+    RXDPT <= 4'h0;
     RXVALID <= 1'b0;
   end
   else begin

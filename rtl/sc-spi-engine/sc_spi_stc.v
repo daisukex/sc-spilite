@@ -79,7 +79,15 @@ reg [7:0] clock_count;
 // --------------------------------------------------
 always @ (posedge SYSCLK) begin
   if (!SYSRSTB) begin
+    SPC_CSSETUP <= 4'h0;
+    SPC_CSHOLD  <= 4'h0;
+    SPC_DWIDTH <= 9'h00;
+    SPC_CPOL <= 1'b0;
+    SPC_CPHA <= 1'b0;
     SPC_SPISTART <= 1'b0;
+    SPC_CSEXTEND <= 1'b0;
+    SPC_CSSEL <= 5'h0;
+    SPC_BORDER <= 1'b0;
     SPIBUSY <= 1'b0;
     SPICOMPLETE <= 1'b0;
     CLK_ENABLE <= 1'b0;

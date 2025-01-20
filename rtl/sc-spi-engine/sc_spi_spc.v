@@ -70,6 +70,7 @@ reg mosi_r, mosi_f;                 // SPI Master Out, Slave In
 reg [31:0] swapTXData;              // Swapping TX Data
 reg rxdat, rxdat_r, rxdat_f;        // SPI RX Data (1 bit)
 reg [31:0] rxdpara;                 // SPI RX Data (Parallel)
+reg [31:0] swapRXData;              // Swapping RX Data
 wire [4:0] bpos_tx, bpos_rx;        // Bit Position
 assign bpos_tx = fc2bit(fc, DWIDTH);
 assign TXDPT = fc2word(fc);
@@ -82,6 +83,18 @@ always @ (*) begin
     swapTXData = TXDATA;
   else
     swapTXData = {TXDATA[7:0], TXDATA[15:8], TXDATA[23:16], TXDATA[31:24]};
+end
+
+always @ (*) begin
+  if (BORDER) begin
+    swapRXData          = rxdpara[31:0];
+    swapRXData[bpos_rx] = rxdat;
+  end
+  else begin
+    swapRXData = rxdpara[31:0];
+    swapRXData[bpos_rx] = rxdat;
+    swapRXData = {swapRXData[7:0], swapRXData[15:8], swapRXData[23:16], swapRXData[31:24]};
+  end
 end
 
 // ----------
@@ -167,9 +180,9 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
       fc_rx <= fc;
       if (fc_rx == DWIDTH)
         fvalid <= 1'b0;
-      if ((!BORDER & bpos_rx == 0) | (BORDER & bpos_rx == 24)) begin
+      if (bpos_rx == 24 | fc_rx == DWIDTH) begin
         RXDPT <= fc2word(fc_rx);
-        RXDATA <= {rxdpara[31:1], rxdat};
+        RXDATA <= swapRXData;
         RXVALID <= 1'b1;
       end
     end

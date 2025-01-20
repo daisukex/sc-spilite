@@ -183,6 +183,7 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
       if (fc_rx == DWIDTH)
         fvalid <= 1'b0;
       if (bpos_rx == 24 | fc_rx == DWIDTH) begin
+        rxdpara <= 32'h00000000;
         RXDPT <= fc2word(fc_rx);
         RXDATA <= swapRXData;
         RXVALID <= 1'b1;

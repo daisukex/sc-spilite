@@ -176,10 +176,10 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
   end
   else begin
     RXVALID <= 1'b0;
+    fc_rx <= fc;
 
     if (fvalid) begin
       rxdpara[bpos_rx] <= rxdat;
-      fc_rx <= fc;
       if (fc_rx == DWIDTH)
         fvalid <= 1'b0;
       if (bpos_rx == 24 | fc_rx == DWIDTH) begin

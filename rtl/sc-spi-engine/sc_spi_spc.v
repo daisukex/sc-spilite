@@ -138,7 +138,7 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
     // ----------------------------------------
     else if (spist == spiDATA) begin
       if (fc == DWIDTH) begin
-        if (CSHOLD != 0) begin
+        if (CSHOLD != 0 & !CSEXTEND) begin
           fc <= 0;
           spist <= spiCSH;
         end

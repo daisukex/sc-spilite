@@ -66,6 +66,7 @@ reg [8:0] fc, fc_rx;                // - SPI Frame Count
 // SPI signal
 reg clken_r, clken_f;               // SPI Clock Enable
 reg [NUM_OF_CS-1:0] cs_r, cs_f;     // SPI Chip Select
+reg cs_nagate;                      // SPI Chip Select Nagate timing
 reg mosi_r, mosi_f;                 // SPI Master Out, Slave In
 reg [31:0] swapTXData;              // Swapping TX Data
 reg rxdat, rxdat_r, rxdat_f;        // SPI RX Data (1 bit)
@@ -141,8 +142,10 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
           fc <= 0;
           spist <= spiCSH;
         end
-        else
+        else begin
+          cs_nagate <= ~CSEXTEND;
           spist <= spiIDLE;
+        end
       end
       else
         fc <= fc + 1;
@@ -153,6 +156,7 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
     else if (spist == spiCSH) begin
       if (fc == CSHOLD - 1) begin
         fc <= 0;
+        cs_nagate <= ~CSEXTEND;
         spist <= spiIDLE;
       end
       else
@@ -212,7 +216,7 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
     // Chip Select
     if (spist == spiCSS | spist == spiDATA)
       cs_r[CSSEL] <= 1'b1;
-    else if (!CSEXTEND & spist == spiIDLE)
+    else if (cs_nagate & spist == spiIDLE)
       cs_r <= 0;
 
     // Clock Enable
@@ -242,7 +246,7 @@ always @ (negedge SPICLK or negedge SYSRSTB) begin
     // Chip Select
     if (spist == spiCSS | spist == spiDATA)
       cs_f[CSSEL] <= 1'b1;
-    else if (!CSEXTEND & spist == spiIDLE)
+    else if (cs_nagate & spist == spiIDLE)
       cs_f <= 1'b0;
 
     // Clock Enable

@@ -1,5 +1,6 @@
 //-----------------------------------------------------------------------------
-// Copyright 2023 Space Cubics, LLC
+// Copyright 2022-2025 Space Cubics, LLC.
+// Copyright 2025 Space Cubics Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,12 +14,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //-----------------------------------------------------------------------------
-// Space Cubics Standard IP Core
-//  AMBA AHB IP
-//  Module: AHB Slave Core (sc_ahbip_slave)
+// Space Cubics AHB Subordinate
+//  Module: sc_ahbip_subordinate
 //-----------------------------------------------------------------------------
 
-module sc_ahbip_slave # (
+module sc_ahbip_subordinate # (
   parameter CYCLE_MODE = 0
 ) (
   // AHB Interface

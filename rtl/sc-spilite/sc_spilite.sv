@@ -93,9 +93,9 @@ logic [31:0] RXDATA;
 logic SPICOMPLETE;
 logic SPIBUSY;
 
-sc_ahbip_slave # (
+sc_ahbip_subordinate # (
   .CYCLE_MODE(1)
-) ahb_slave (.*);
+) ahb_s (.*);
 
 assign regbus.WADR = REG_WADR;
 assign regbus.WTYP = REG_WTYP;

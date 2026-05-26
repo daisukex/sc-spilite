@@ -5,7 +5,7 @@
 ../rtl/sc-spi-engine/sc_spi_spc.v
 ../rtl/sc-spi-engine/sc_spi_sss.v
 ../rtl/sc-spi-engine/sc_spi_engine.v
-../rtl/sc-ahbip/sc_ahbip_slave.v
+../rtl/sc-ahbip/sc_ahbip_subordinate.v
 ../rtl/sc-spilite/sc_spil_pkg.sv
 ../rtl/sc-spilite/sc_spil_reg.sv
 ../rtl/sc-spilite/sc_spil_scd.sv

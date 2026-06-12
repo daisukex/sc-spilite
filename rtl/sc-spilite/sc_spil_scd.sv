@@ -1,5 +1,6 @@
 //-----------------------------------------------------------------------------
-// Copyright 2024 Space Cubics, LLC
+// Copyright 2025-2026 Space Cubics Inc.
+// Copyright 2024      Space Cubics, LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,9 +14,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //-----------------------------------------------------------------------------
-// Space Cubics Standard IP Core
-//  SPI Lite
-//  Module: SPI Lite Chip Select Decoder (sc_spil_scd)
+// Space Cubics Open-source Reliable Core Architecture
+//  SPI Lite Controller (Single-bit SPI Controller)
+//  Module: sc_spil_scd: SPI Chip Select Decoder
 //-----------------------------------------------------------------------------
 
 module sc_spil_scd # (

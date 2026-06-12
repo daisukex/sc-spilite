@@ -13,9 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //-----------------------------------------------------------------------------
-// Space Cubics Standard IP Core
-//  SPI Protocol Engine
-//  Module: SPI Protocol Controller (sc_spi_spc)
+// Space Cubics Open-source Reliable Core Architecture
+//  SPI Controller Protocol Engine
+//  Module: sc_spi_spc: SPI Protocol Controller
 //-----------------------------------------------------------------------------
 
 module sc_spi_spc # (

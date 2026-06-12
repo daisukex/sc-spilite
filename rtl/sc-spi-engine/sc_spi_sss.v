@@ -1,5 +1,6 @@
 //-----------------------------------------------------------------------------
-// Copyright 2024 Space Cubics, LLC
+// Copyright 2025-2026 Space Cubics Inc.
+// Copyright 2024      Space Cubics, LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,9 +14,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //-----------------------------------------------------------------------------
-// Space Cubics Standard IP Core
-//  SPI Protocol Engine
-//  Module: SPI Signal Synchronizer (sc_spi_sss)
+// Space Cubics Open-source Reliable Core Architecture
+//  SPI Controller Protocol Engine
+//  Module: sc_spi_sss: SPI Signal Synchronizer
 //-----------------------------------------------------------------------------
 
 module sc_spi_sss (

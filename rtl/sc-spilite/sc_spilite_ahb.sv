@@ -93,9 +93,39 @@ logic [31:0] RXDATA;
 logic SPICOMPLETE;
 logic SPIBUSY;
 
+// AHB Subordinate
 sc_ahbip_subordinate # (
   .CYCLE_MODE(1)
-) ahb_s (.*);
+) ahb_s (
+  // AHB Interface
+  .HCLK(HCLK),
+  .HRESETN(HRESETN),
+  .HSEL(HSEL),
+  .HADDR(HADDR),
+  .HTRANS(HTRANS),
+  .HSIZE(HSIZE),
+  .HBURST(HBURST),
+  .HWRITE(HWRITE),
+  .HREADYIN(HREADYIN),
+  .HREADYOUT(HREADYOUT),
+  .HWDATA(HWDATA),
+  .HRDATA(HRDATA),
+  .HRESP(HRESP),
+
+  // Register Interface
+  .REG_WADR(REG_WADR),
+  .REG_WTYP(REG_WTYP),
+  .REG_WENB(REG_WENB),
+  .REG_WDAT(REG_WDAT),
+  .REG_WWAT(REG_WWAT),
+  .REG_WERR(REG_WERR),
+  .REG_RADR(REG_RADR),
+  .REG_RTYP(REG_RTYP),
+  .REG_RENB(REG_RENB),
+  .REG_RDAT(REG_RDAT),
+  .REG_RWAT(REG_RWAT),
+  .REG_RERR(REG_RERR)
+);
 
 assign regbus.WADR = REG_WADR;
 assign regbus.WTYP = REG_WTYP;

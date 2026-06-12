@@ -24,7 +24,7 @@ module sc_spil_reg
   import sc_spil_pkg::*;
 # (
   parameter NUM_CS = 32,
-  parameter NUM_OF_BUF = 1
+  parameter BUFFER_DEPTH = 1
 ) (
   // System Interface
   input SYSCLK,
@@ -60,7 +60,7 @@ module sc_spil_reg
 
 localparam CS_WIDTH = (NUM_CS <= 1) ? 1: $clog2(NUM_CS);
 localparam ADDR_DECODE_BITS = 32'h0000_0FFC;
-localparam BUF_LINE = (NUM_OF_BUF == 0) ? 1: (NUM_OF_BUF >= 16) ? 16: NUM_OF_BUF;
+localparam BUF_LINE = (BUFFER_DEPTH == 0) ? 1: (BUFFER_DEPTH >= 16) ? 16: BUFFER_DEPTH;
 
 genvar i;
 

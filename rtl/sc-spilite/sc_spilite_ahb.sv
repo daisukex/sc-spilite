@@ -21,7 +21,7 @@
 
 module sc_spilite_ahb # (
   parameter NUM_CS = 32,
-  parameter NUM_OF_BUF = 1
+  parameter BUFFER_DEPTH = 1
 ) (
   // AHB Bus Interface
   input HCLK,
@@ -144,7 +144,7 @@ assign REG_RERR = regbus.RERR;
 
 sc_spil_reg # (
   .NUM_CS(NUM_CS),
-  .NUM_OF_BUF(NUM_OF_BUF)
+  .BUFFER_DEPTH(BUFFER_DEPTH)
 ) spil_reg (
   .*,
   .SYSCLK(HCLK),

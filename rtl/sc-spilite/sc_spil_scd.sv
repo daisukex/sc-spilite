@@ -20,15 +20,15 @@
 //-----------------------------------------------------------------------------
 
 module sc_spil_scd # (
-  parameter NUM_OF_CS = 32
+  parameter NUM_CS = 32
 ) (
   input [4:0] CS_SEL,
   input CSB_IN,
-  output reg [NUM_OF_CS-1:0] CSB_OUT
+  output reg [NUM_CS-1:0] CSB_OUT
 );
 
 always @ (*) begin
-  CSB_OUT = {NUM_OF_CS{1'b1}};
+  CSB_OUT = {NUM_CS{1'b1}};
   CSB_OUT[CS_SEL] = CSB_IN;
 end
 

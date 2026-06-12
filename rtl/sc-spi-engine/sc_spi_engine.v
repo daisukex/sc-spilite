@@ -20,7 +20,7 @@
 //-----------------------------------------------------------------------------
 
 module sc_spi_engine # (
-  parameter NUM_OF_CS = 32
+  parameter NUM_CS = 32
 ) (
   // System Control
   // ------------------------
@@ -56,7 +56,7 @@ module sc_spi_engine # (
 
   // SPI Interface
   // ------------------------
-  output [NUM_OF_CS-1:0] CSB,
+  output [NUM_CS-1:0] CSB,
   output SCLK,
   output MOSI,
   input MISO
@@ -153,7 +153,7 @@ assign DATACLK = SPICLK;
 // SPI Protocol Controller
 // --------------------------------------------------
 sc_spi_spc # (
-  .NUM_OF_CS(NUM_OF_CS)
+  .NUM_CS(NUM_CS)
 ) spc (
   // System Control
   .SPICLK(SPICLK),

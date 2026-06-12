@@ -20,7 +20,7 @@
 //-----------------------------------------------------------------------------
 
 module sc_spilite_ahb # (
-  parameter NUM_OF_CS = 32,
+  parameter NUM_CS = 32,
   parameter NUM_OF_BUF = 1
 ) (
   // AHB Bus Interface
@@ -43,7 +43,7 @@ module sc_spilite_ahb # (
 
   // SPI Interface
   input SRCCLK,             // SPI Source clock
-  output [NUM_OF_CS-1:0] CSB,  // SPI Chip Select (Active Low)
+  output [NUM_CS-1:0] CSB,  // SPI Chip Select (Active Low)
   output SCLK,
   output MOSI,
   input MISO
@@ -143,7 +143,7 @@ assign REG_RWAT = regbus.RWAT;
 assign REG_RERR = regbus.RERR;
 
 sc_spil_reg # (
-  .NUM_OF_CS(NUM_OF_CS),
+  .NUM_CS(NUM_CS),
   .NUM_OF_BUF(NUM_OF_BUF)
 ) spil_reg (
   .*,
@@ -177,7 +177,7 @@ sc_spil_reg # (
 );
 
 sc_spi_engine # (
-  .NUM_OF_CS(NUM_OF_CS)
+  .NUM_CS(NUM_CS)
 ) spi_engine (
   .SYSCLK(HCLK),
   .SRCCLK(SRCCLK),

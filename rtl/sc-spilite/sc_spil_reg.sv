@@ -23,7 +23,7 @@ module sc_spil_reg
   import sc_ipreg_pkg::*;
   import sc_spil_pkg::*;
 # (
-  parameter NUM_OF_CS = 32,
+  parameter NUM_CS = 32,
   parameter NUM_OF_BUF = 1
 ) (
   // System Interface
@@ -58,7 +58,7 @@ module sc_spil_reg
 
 `include "sc_spil_version.vh"
 
-localparam CS_WIDTH = (NUM_OF_CS <= 1) ? 1: $clog2(NUM_OF_CS);
+localparam CS_WIDTH = (NUM_CS <= 1) ? 1: $clog2(NUM_CS);
 localparam ADDR_DECODE_BITS = 32'h0000_0FFC;
 localparam BUF_LINE = (NUM_OF_BUF == 0) ? 1: (NUM_OF_BUF >= 16) ? 16: NUM_OF_BUF;
 
@@ -250,7 +250,7 @@ end
 logic hit_r_scfg;
 assign hit_r_scfg = reg_hit(SPL_CFG_p, ADDR_DECODE_BITS, REGBUS.RADR, REGBUS.RENB);
 SPL_CFG_s scfg;
-assign scfg.NOCS = NUM_OF_CS;
+assign scfg.NOCS = NUM_CS;
 assign scfg.NOBUF = BUF_LINE;
 
 // ----

@@ -19,7 +19,7 @@
 //-----------------------------------------------------------------------------
 
 module sc_spi_spc # (
-  parameter NUM_OF_CS = 32
+  parameter NUM_CS = 32
 ) (
   // System Control
   input SPICLK,
@@ -45,7 +45,7 @@ module sc_spi_spc # (
   output reg [3:0] RXDPT,    // SPI Receive buffer pointer
 
   // SPI Interface
-  output reg [NUM_OF_CS-1:0] CSB,
+  output reg [NUM_CS-1:0] CSB,
                              // SPI Chip Select Signal
   output reg SCLK,           // SPI Clock Signal
   output reg MOSI,           // SPI Master Out, Slave In
@@ -65,7 +65,7 @@ reg [8:0] fc, fc_rx;                // - SPI Frame Count
 
 // SPI signal
 reg clken_r, clken_f;               // SPI Clock Enable
-reg [NUM_OF_CS-1:0] cs_r, cs_f;     // SPI Chip Select
+reg [NUM_CS-1:0] cs_r, cs_f;        // SPI Chip Select
 reg cs_nagate;                      // SPI Chip Select Nagate timing
 reg mosi_r, mosi_f;                 // SPI Master Out, Slave In
 reg [31:0] swapTXData;              // Swapping TX Data

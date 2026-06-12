@@ -18,7 +18,7 @@
 //  Module: SPI Lite Top (sc_spilite)
 //-----------------------------------------------------------------------------
 
-module sc_spilite # (
+module sc_spilite_ahb # (
   parameter NUM_OF_CS = 32,
   parameter NUM_OF_BUF = 1
 ) (

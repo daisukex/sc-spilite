@@ -49,8 +49,6 @@ module sc_spilite_ahb # (
   input MISO
 );
 
-sc_regbus_if regbus();
-
 logic DATACLK;
 
 logic [31:0] REG_WADR;
@@ -59,6 +57,7 @@ logic [3:0]  REG_WENB;
 logic [31:0] REG_WDAT;
 logic REG_WWAT;
 logic REG_WERR;
+logic [9:0] reg_wtyp_full;
 
 logic [31:0] REG_RADR;
 logic [4:0]  REG_RTYP;
@@ -66,6 +65,7 @@ logic REG_RENB;
 logic [31:0] REG_RDAT;
 logic REG_RWAT;
 logic REG_RERR;
+logic [9:0] reg_rtyp_full;
 
 logic [4:0] REG_CSSEL;
 logic [7:0] REG_CLKHIGH;
@@ -127,20 +127,8 @@ sc_ahbip_subordinate # (
   .REG_RWAT(REG_RWAT),
   .REG_RERR(REG_RERR)
 );
-
-assign regbus.WADR = REG_WADR;
-assign regbus.WTYP = REG_WTYP;
-assign regbus.WENB = REG_WENB;
-assign regbus.WDAT = REG_WDAT;
-assign REG_WWAT = regbus.WWAT;
-assign REG_WERR = regbus.WERR;
-
-assign regbus.RADR = REG_RADR;
-assign regbus.RTYP = REG_RTYP;
-assign regbus.RENB = REG_RENB;
-assign REG_RDAT = regbus.RDAT;
-assign REG_RWAT = regbus.RWAT;
-assign REG_RERR = regbus.RERR;
+assign reg_wtyp_full = {5'h0, REG_WTYP};
+assign reg_rtyp_full = {5'h0, REG_RTYP};
 
 sc_spil_reg # (
   .NUM_CS(NUM_CS),
@@ -152,7 +140,18 @@ sc_spil_reg # (
   .INTERRUPT(SPIL_IRQ),
 
   // Register Interface
-  .REGBUS(regbus),
+  .REG_WADR(REG_WADR),
+  .REG_WTYP(reg_wtyp_full),
+  .REG_WENB(REG_WENB),
+  .REG_WDAT(REG_WDAT),
+  .REG_WWAT(REG_WWAT),
+  .REG_WERR(REG_WERR),
+  .REG_RADR(REG_RADR),
+  .REG_RTYP(reg_rtyp_full),
+  .REG_RENB(REG_RENB),
+  .REG_RDAT(REG_RDAT),
+  .REG_RWAT(REG_RWAT),
+  .REG_RERR(REG_RERR),
 
   // SPI Lite Core Interface
   .CSSEL(REG_CSSEL),

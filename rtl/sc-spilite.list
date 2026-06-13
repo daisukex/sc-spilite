@@ -1,4 +1,3 @@
-../rtl/sc-generic/sc_regbus_if.sv
 ../rtl/screg-pkg/screg_pkg.sv
 ../rtl/sc-spi-engine/sc_spi_stc.v
 ../rtl/sc-spi-engine/sc_spi_scg.v

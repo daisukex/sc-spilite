@@ -31,7 +31,19 @@ module sc_spil_reg
   output INTERRUPT,
 
   // Register Interface
-  sc_regbus_if.regif REGBUS,
+  input [31:0] REG_WADR,
+  input [9:0] REG_WTYP,
+  input [3:0] REG_WENB,
+  input [31:0] REG_WDAT,
+  output logic REG_WWAT,
+  output logic REG_WERR,
+
+  input [31:0] REG_RADR,
+  input [9:0] REG_RTYP,
+  input REG_RENB,
+  output logic [31:0] REG_RDAT,
+  output logic REG_RWAT,
+  output logic REG_RERR,
 
   // SPI Lite Core Interface
   output [4:0] CSSEL,
@@ -63,18 +75,18 @@ module sc_spil_reg
 
 sc_regbus_t bus;
 always_comb begin
-  bus.wadr = REGBUS.WADR;
-  bus.wtyp = REGBUS.WTYP;
-  bus.wenb = REGBUS.WENB;
-  bus.wdat = REGBUS.WDAT;
-  REGBUS.WWAT = bus.wwat;
-  REGBUS.WERR = bus.werr;
-  bus.radr = REGBUS.RADR;
-  bus.rtyp = REGBUS.RTYP;
-  bus.renb = REGBUS.RENB;
-  REGBUS.RDAT = bus.rdat;
-  REGBUS.RWAT = bus.rwat;
-  REGBUS.RERR = bus.rerr;
+  bus.wadr = REG_WADR;
+  bus.wtyp = REG_WTYP;
+  bus.wenb = REG_WENB;
+  bus.wdat = REG_WDAT;
+  REG_WWAT = bus.wwat;
+  REG_WERR = bus.werr;
+  bus.radr = REG_RADR;
+  bus.rtyp = REG_RTYP;
+  bus.renb = REG_RENB;
+  REG_RDAT = bus.rdat;
+  REG_RWAT = bus.rwat;
+  REG_RERR = bus.rerr;
 end
 
 assign bus.wwat = 1'b0;

@@ -6,6 +6,6 @@
 ../rtl/sc-spi-engine/sc_spi_sss.v
 ../rtl/sc-spi-engine/sc_spi_engine.v
 ../rtl/sc-ahbip/sc_ahbip_subordinate.v
-../rtl/sc-spilite/sc_spil_reg.sv
-../rtl/sc-spilite/sc_spil_scd.sv
-../rtl/sc-spilite/sc_spilite_ahb.sv
+../rtl/sc_spil_reg.sv
+../rtl/sc_spil_scd.sv
+../rtl/sc_spilite_ahb.sv

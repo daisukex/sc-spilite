@@ -38,8 +38,8 @@ module sc_spilite_ahb # (
   output [31:0] AHB_S_HRDATA,
   output [1:0] AHB_S_HRESP,
 
-  // Interrupt Signals
-  output INTERRUPT,
+  // Interrupt Signal
+  output SPIL_IRQ,
 
   // SPI Interface
   input SRCCLK,             // SPI Source clock
@@ -149,7 +149,7 @@ sc_spil_reg # (
   // System Interface
   .SYSCLK(HCLK),
   .SYSRSTB(HRESETN),
-  .INTERRUPT(INTERRUPT),
+  .INTERRUPT(SPIL_IRQ),
 
   // Register Interface
   .REGBUS(regbus),

@@ -19,9 +19,8 @@
 //  Module: sc_spil_reg: SPI Lite Register
 //-----------------------------------------------------------------------------
 
-module sc_spil_reg 
-  import sc_ipreg_pkg::*;
-  import sc_spil_pkg::*;
+module sc_spil_reg
+  import screg_pkg::*;
 # (
   parameter NUM_CS = 32,
   parameter BUFFER_DEPTH = 1
@@ -56,68 +55,135 @@ module sc_spil_reg
   output CPHA
 );
 
+
+// Declaration of base variable for register framework
+//------------------------------------------------------
 `include "sc_spil_version.vh"
+`include "sc_spil_reg_desc.svh"
 
-localparam CS_WIDTH = (NUM_CS <= 1) ? 1: $clog2(NUM_CS);
-localparam ADDR_DECODE_BITS = 32'h0000_0FFC;
-localparam BUF_LINE = (BUFFER_DEPTH == 0) ? 1: (BUFFER_DEPTH >= 16) ? 16: BUFFER_DEPTH;
+sc_regbus_t bus;
+always_comb begin
+  bus.wadr = REGBUS.WADR;
+  bus.wtyp = REGBUS.WTYP;
+  bus.wenb = REGBUS.WENB;
+  bus.wdat = REGBUS.WDAT;
+  REGBUS.WWAT = bus.wwat;
+  REGBUS.WERR = bus.werr;
+  bus.radr = REGBUS.RADR;
+  bus.rtyp = REGBUS.RTYP;
+  bus.renb = REGBUS.RENB;
+  REGBUS.RDAT = bus.rdat;
+  REGBUS.RWAT = bus.rwat;
+  REGBUS.RERR = bus.rerr;
+end
 
-genvar i;
+assign bus.wwat = 1'b0;
+assign bus.werr = 1'b0;
+assign bus.rwat = 1'b0;
+assign bus.rerr = 1'b0;
 
-// ----
-// SPI Lite Transaction Control Register
-// --------------------------------------------------
-logic hit_w_strc, hit_r_strc;
-assign hit_w_strc = reg_hit(SPL_TRC_p, ADDR_DECODE_BITS, REGBUS.WADR, |REGBUS.WENB);
-assign hit_r_strc = reg_hit(SPL_TRC_p, ADDR_DECODE_BITS, REGBUS.RADR,  REGBUS.RENB);
-SPL_TRC_s strc;
-SPL_TRC_s rd_strc;
 
-// Register
-always @ (posedge SYSCLK) begin
+// IP Version/Configuration Register
+//--------------------------------------------
+IPVER_s IPVER;
+IPCONF_s IPCONF;
+always_comb begin
+  IPVER  = reg_reset(reg_table[get_idx(IPVER_desc, 0)]);
+  IPCONF = reg_reset(reg_table[get_idx(IPCONF_desc, 0)]);
+end
+
+
+// Reset Control Register
+//--------------------------------------------
+logic reg_rst_b;
+(* dont_touch = "yes" *) RSTCTRL_s [2:0] RSTCTRL /* synthesis syn_preserve = 1 */;
+
+always_ff @ (posedge SYSCLK) begin
   if (!SYSRSTB)
-    strc <= SPL_TRC_p.init;
+    RSTCTRL <= reg_reset_tmr(reg_table[get_idx(RSTCTRL_desc, 0)]);
+  else
+    RSTCTRL <= reg_write_tmr(reg_table[get_idx(RSTCTRL_desc, 0)], bus);
+end
+RSTCTRL_s rstctrl_data;
+assign rstctrl_data = reg_mvote(RSTCTRL);
+assign reg_rst_b = ~rstctrl_data.ip_reset;
+
+
+// Scratch Pad Register
+//--------------------------------------------
+SCRPAD_s SCRPAD;
+
+always_ff @ (posedge SYSCLK) begin
+  if (!reg_rst_b)
+    SCRPAD <= reg_reset(reg_table[get_idx(SCRPAD_desc, 0)]);
+  else
+    SCRPAD <= reg_write(reg_table[get_idx(SCRPAD_desc, 0)], bus);
+end
+
+
+// SPI-Lite Interrupt Status/Enable Register
+//--------------------------------------------
+INT_s INTSTATS;
+INT_s INTENB;
+
+always_ff @ (posedge SYSCLK) begin
+  if (!reg_rst_b) begin
+    INTSTATS <= reg_reset(reg_table[get_idx(INTST_desc, 0)]);
+    INTENB   <= reg_reset(reg_table[get_idx(INTEN_desc, 0)]);
+  end
   else begin
-    strc <= reg_wdata(SPL_TRC_p, hit_w_strc, strc, REGBUS.WDAT, REGBUS.WENB);
-    if (SPIBUSY)
-      strc.STARTBUSY <= 1'b0;
+    INTSTATS <= reg_write(reg_table[get_idx(INTST_desc, 0)], bus);
+    INTENB   <= reg_write(reg_table[get_idx(INTEN_desc, 0)], bus);
+    if (SPICOMPLETE)
+      INTSTATS.trans_comp <= 1'b1;
+  end
+end
+assign INTERRUPT = |(INTSTATS & INTENB);
+
+
+// SPI-Lite Transaction Control Register
+//--------------------------------------------
+TRC_s TRCTRL, rd_TRCTRL;
+
+always_ff @ (posedge SYSCLK) begin
+  if (!reg_rst_b)
+    TRCTRL <= reg_reset(reg_table[get_idx(TRC_desc, 0)]);
+  else begin
+    TRCTRL <= reg_write(reg_table[get_idx(TRC_desc, 0)], bus);
+    if (TRCTRL.startbusy)
+      TRCTRL.startbusy <= 1'b0;
   end
 end
 
-always @ (*) begin
-  rd_strc = strc;
-  rd_strc.CSSEL = CSSEL;
-  rd_strc.STARTBUSY = SPIBUSY;
+assign DWIDTH   = TRCTRL.fmsize;
+assign CSEXTEND = TRCTRL.csextend;
+assign CSSEL    = TRCTRL.cssel;
+
+always_comb begin
+  rd_TRCTRL = TRCTRL;
+  rd_TRCTRL.startbusy = SPIBUSY;
 end
 
-assign DWIDTH = strc.FMSIZE;
-assign CSEXTEND = strc.CSEXTEND;
-assign CSSEL = {{(5-CS_WIDTH){1'b0}}, strc.CSSEL[CS_WIDTH-1:0]};
 
-// ----
-// SPI Lite Transaction Format Register
-// --------------------------------------------------
-logic hit_w_strf, hit_r_strf;
-assign hit_w_strf = reg_hit(SPL_TRF_p, ADDR_DECODE_BITS, REGBUS.WADR, |REGBUS.WENB);
-assign hit_r_strf = reg_hit(SPL_TRF_p, ADDR_DECODE_BITS, REGBUS.RADR,  REGBUS.RENB);
-SPL_TRF_s strf;
+// SPI-Lite Transaction Format Register
+//--------------------------------------------
+TRF_s TRFORMAT;
 
-// Register
-always @ (posedge SYSCLK) begin
-  if (!SYSRSTB)
-    strf <= SPL_TRF_p.init;
+always_ff @ (posedge SYSCLK) begin
+  if (!reg_rst_b)
+    TRFORMAT <= reg_reset(reg_table[get_idx(TRF_desc, 0)]);
   else
-    strf <= reg_wdata(SPL_TRF_p, hit_w_strf, strf, REGBUS.WDAT, REGBUS.WENB);
+    TRFORMAT <= reg_write(reg_table[get_idx(TRF_desc, 0)], bus);
 end
 
-assign CSHOLD = strf.CSHOLD;
-assign CSSETUP = strf.CSSETUP;
-assign CPHA = strf.CPHA;
-assign CPOL = strf.CPOL;
+assign CSHOLD  = TRFORMAT.cshold;
+assign CSSETUP = TRFORMAT.cssetup;
+assign CPHA    = TRFORMAT.cpha;
+assign CPOL    = TRFORMAT.cpol;
 
 logic [7:0] divrate;
-assign divrate = (strf.CLKDR < 2) ? 2: strf.CLKDR;
-always @ (*) begin
+assign divrate = (TRFORMAT.clkdr < 2) ? 2: TRFORMAT.clkdr;
+always_comb begin
   if ((divrate %2) == 0) begin
     CLKHIGH = divrate/2;
     CLKLOW  = divrate/2;
@@ -136,169 +202,91 @@ always @ (*) begin
   end
 end
 
-// ----
-// SPI Lite Interrupt Status Register
-// --------------------------------------------------
-logic hit_w_sist, hit_r_sist;
-assign hit_w_sist = reg_hit(SPL_IST_p, ADDR_DECODE_BITS, REGBUS.WADR, |REGBUS.WENB);
-assign hit_r_sist = reg_hit(SPL_IST_p, ADDR_DECODE_BITS, REGBUS.RADR,  REGBUS.RENB);
-SPL_IST_s sist;
 
-// Register
-always @ (posedge SYSCLK) begin
-  if (!SYSRSTB)
-    sist <= SPL_IST_p.init;
-  else begin
-    if (SPICOMPLETE)
-      sist.COMPST <= 1'b1;
-    else
-      sist <= reg_wdata(SPL_IST_p, hit_w_sist, sist, REGBUS.WDAT, REGBUS.WENB);
-  end
-end
-
-// ----
-// SPI Lite Interrupt Enable Register
-// --------------------------------------------------
-logic hit_w_sien, hit_r_sien;
-assign hit_w_sien = reg_hit(SPL_IEN_p, ADDR_DECODE_BITS, REGBUS.WADR, |REGBUS.WENB);
-assign hit_r_sien = reg_hit(SPL_IEN_p, ADDR_DECODE_BITS, REGBUS.RADR,  REGBUS.RENB);
-SPL_IEN_s sien;
-
-// Register
-always @ (posedge SYSCLK) begin
-  if (!SYSRSTB)
-    sien <= SPL_IEN_p.init;
-  else
-    sien <= reg_wdata(SPL_IEN_p, hit_w_sien, sien, REGBUS.WDAT, REGBUS.WENB);
-end
-assign INTERRUPT = |(sien & sist);
-
-// ----
-// SPI Lite TXD Register
-// --------------------------------------------------
-logic [BUF_LINE-1:0] hit_w_stxd, hit_r_stxd;
-SPL_TXD_s stxd [BUF_LINE-1:0];
-SPL_TXD_s rd_stxd;
-for (i=0; i<BUF_LINE; i=i+1) begin
-  assign hit_w_stxd[i] = reg_hit_buf(SPL_TXD_p, i, ADDR_DECODE_BITS, REGBUS.WADR, |REGBUS.WENB);
-  assign hit_r_stxd[i] = reg_hit_buf(SPL_TXD_p, i, ADDR_DECODE_BITS, REGBUS.RADR,  REGBUS.RENB);
-
-  // Register
-  always @ (posedge SYSCLK) begin
-    if (!SYSRSTB)
-      stxd[i] <= SPL_TXD_p.init;
-    else
-      stxd[i] <= reg_wdata(SPL_TXD_p, hit_w_stxd[i], stxd[i], REGBUS.WDAT, REGBUS.WENB);
-  end
-end
-assign TXDATA = stxd[TXDPT];
-
-// ----
-// SPI Lite RXD Register
-// --------------------------------------------------
-logic [BUF_LINE-1:0] hit_r_srxd;
-SPL_RXD_s srxd [BUF_LINE-1:0];
-SPL_RXD_s rd_srxd;
-
-for (i=0; i<BUF_LINE; i=i+1)
-  assign hit_r_srxd[i] = reg_hit_buf(SPL_RXD_p, i, ADDR_DECODE_BITS, REGBUS.RADR, REGBUS.RENB);
-
-// Register
-always @ (posedge DATACLK or negedge SYSRSTB) begin
-  integer bf;
-  if (!SYSRSTB)
-    for (bf=0; bf<BUF_LINE; bf=bf+1)
-      srxd[bf]  <= 0;
-  else if (RXVALID)
-    srxd[RXDPT] <= RXDATA;
-end
-
-// ----
 // SPI-Lite Operation Mode Register
-// --------------------------------------------------
-logic hit_w_sopm, hit_r_sopm;
-assign hit_w_sopm = reg_hit(SPL_OPM_p, ADDR_DECODE_BITS, REGBUS.WADR, |REGBUS.WENB);
-assign hit_r_sopm = reg_hit(SPL_OPM_p, ADDR_DECODE_BITS, REGBUS.RADR,  REGBUS.RENB);
-SPL_OPM_s sopm;
+//--------------------------------------------
+OPM_s OPMODE;
 
-// Register
-always @ (posedge SYSCLK) begin
-  if (!SYSRSTB)
-    sopm <= SPL_OPM_p.init;
+always_ff @ (posedge SYSCLK) begin
+  if (!reg_rst_b)
+    OPMODE <= reg_reset(reg_table[get_idx(OPM_desc, 0)]);
   else
-    sopm <= reg_wdata(SPL_OPM_p, hit_w_sopm, sopm, REGBUS.WDAT, REGBUS.WENB);
+    OPMODE <= reg_write(reg_table[get_idx(OPM_desc, 0)], bus);
 end
-assign BORDER = sopm.BORDER;
+assign BORDER = OPMODE.boder;
 
 // SPI Transaction Start
 always @ (posedge SYSCLK) begin
-  if (!SYSRSTB)
+  sc_reg_event_t evt;
+  if (!reg_rst_b)
     TXSTART <= 1'b0;
   else begin
     if (TXSTART & SPIBUSY)
       TXSTART <= 1'b0;
-    else if (!sopm.TXSTM & strc.STARTBUSY)
+    else if (!OPMODE.stmode & TRCTRL.startbusy)
       TXSTART <= 1'b1;
-    else if (sopm.TXSTM & hit_w_stxd)
+    else if (OPMODE.stmode &
+             is_valid_reg_write(reg_table[get_idx(TRC_desc, BUF_LINE -1)], bus, evt))
       TXSTART <= 1'b1;
   end
 end
 
-// ----
-// SPI-Lite Configuration Register
-// --------------------------------------------------
-logic hit_r_scfg;
-assign hit_r_scfg = reg_hit(SPL_CFG_p, ADDR_DECODE_BITS, REGBUS.RADR, REGBUS.RENB);
-SPL_CFG_s scfg;
-assign scfg.NOCS = NUM_CS;
-assign scfg.NOBUF = BUF_LINE;
 
-// ----
-// SPI Lite Version Register
-// --------------------------------------------------
-logic hit_r_sver;
-assign hit_r_sver = reg_hit(SPL_VER_p, ADDR_DECODE_BITS, REGBUS.RADR, REGBUS.RENB);
-SPL_VER_s sver;
-assign sver.MAJOR_VER = MAJVER_VAL;
-assign sver.MINOR_VER = MINVER_VAL;
-assign sver.PATCH_VER = PATVER_VAL;
+// SPI-Lite Transmit/Receive Data Register
+//--------------------------------------------
+TRXD_s TXD [BUFFER_DEPTH];
+TRXD_s RXD [BUFFER_DEPTH];
 
-// ----
-// Register Read Control
-//-----------------------------------------------
-always @ (posedge SYSCLK) begin
+always_ff @ (posedge SYSCLK) begin
+  for (int i=0; i<BUFFER_DEPTH; i++) begin
+    if (!reg_rst_b)
+      TXD[i] <= reg_reset(reg_table[get_idx(TXD_desc, i)]);
+    else
+      TXD[i] <= reg_write(reg_table[get_idx(TXD_desc, i)], bus);
+  end
+end
+assign TXDATA = TXD[TXDPT];
+
+always_ff @ (posedge SYSCLK) begin
+  if (!reg_rst_b)
+    for (int i=0; i<BUFFER_DEPTH; i++)
+      RXD[i] <= reg_reset(reg_table[get_idx(RXD_desc, i)]);
+  else if (RXVALID)
+    RXD[RXDPT] <= RXDATA;
+end
+
+
+// Register Read Logic
+//----------------------------------
+always_ff @ (posedge SYSCLK) begin
+  sc_reg_event_t re;
   if (!SYSRSTB)
-    REGBUS.RDAT <= 32'h0000_0000;
+    bus.rdat <= '0;
   else begin
-    if (hit_r_strc)        REGBUS.RDAT <= rd_strc;
-    else if (hit_r_strf)   REGBUS.RDAT <= strf;
-    else if (hit_r_sist)   REGBUS.RDAT <= sist;
-    else if (hit_r_sien)   REGBUS.RDAT <= sien;
-    else if (|hit_r_stxd)  REGBUS.RDAT <= rd_stxd;
-    else if (|hit_r_srxd)  REGBUS.RDAT <= rd_srxd;
-    else if (hit_r_sopm)   REGBUS.RDAT <= sopm;
-    else if (hit_r_scfg)   REGBUS.RDAT <= scfg;
-    else if (hit_r_sver)   REGBUS.RDAT <= sver;
-    else                   REGBUS.RDAT <= 32'h0000_0000;
+    bus.rdat <= '0;
+    for(int i=0; i<(RESERVED_ADDR_SIZE>>2); i++) begin
+      if (is_valid_reg_read(reg_table[i], bus, re))
+        bus.rdat <= re.data;
+    end
   end
 end
 
-always @ (*) begin
-  integer bf;
-  rd_stxd = 0;
-  rd_srxd = 0;
-  for (bf=0; bf<BUF_LINE; bf=bf+1) begin
-    if (hit_r_stxd[bf])
-      rd_stxd = stxd[bf];
-    if (hit_r_srxd[bf])
-      rd_srxd = srxd[bf];
+// Register Table
+//--------------------------------------------
+always_comb begin                     // Descriptor    Data                Reg ID
+  reg_table[get_idx(IPVER_desc, 0)]   = {IPVER_desc,   IPVER,              32'h0};
+  reg_table[get_idx(IPCONF_desc, 0)]  = {IPCONF_desc,  IPCONF,             32'h0};
+  reg_table[get_idx(RSTCTRL_desc, 0)] = {RSTCTRL_desc, reg_mvote(RSTCTRL), 32'h0};
+  reg_table[get_idx(SCRPAD_desc, 0)]  = {SCRPAD_desc,  SCRPAD,             32'h0};
+  reg_table[get_idx(INTST_desc, 0)]   = {INTST_desc,   INTSTATS,           32'h0};
+  reg_table[get_idx(INTEN_desc, 0)]   = {INTEN_desc,   INTENB,             32'h0};
+  reg_table[get_idx(TRC_desc, 0)]     = {TRC_desc,     TRCTRL,             32'h0};
+  reg_table[get_idx(TRF_desc, 0)]     = {TRF_desc,     TRFORMAT,           32'h0};
+  reg_table[get_idx(OPM_desc, 0)]     = {OPM_desc,     OPMODE,             32'h0};
+  for (int i=0; i<BUFFER_DEPTH; i++) begin
+    reg_table[get_idx(TXD_desc, 0)]   = {TXD_desc,     TXD[i],             32'h0};
+    reg_table[get_idx(RXD_desc, 0)]   = {RXD_desc,     RXD[i],             32'h0};
   end
 end
-
-assign REGBUS.WWAT = 1'b0;
-assign REGBUS.WERR = 1'b0;
-
-assign REGBUS.RWAT = 1'b0;
-assign REGBUS.RERR = 1'b0;
 
 endmodule

@@ -68,35 +68,12 @@ reg clken_r, clken_f;               // SPI Clock Enable
 reg [NUM_CS-1:0] cs_r, cs_f;        // SPI Chip Select
 reg cs_nagate;                      // SPI Chip Select Nagate timing
 reg mosi_r, mosi_f;                 // SPI Master Out, Slave In
-reg [31:0] swapTXData;              // Swapping TX Data
 reg rxdat, rxdat_r, rxdat_f;        // SPI RX Data (1 bit)
 reg [31:0] rxdpara;                 // SPI RX Data (Parallel)
-reg [31:0] swapRXData;              // Swapping RX Data
 wire [4:0] bpos_tx, bpos_rx;        // Bit Position
-assign bpos_tx = fc2bit(fc, DWIDTH);
+assign bpos_tx = fc2bit(BORDER, DWIDTH, fc);
 assign TXDPT = fc2word(fc);
 
-// ----------
-// Byte Swapping
-// --------------------------------------------------
-always @ (*) begin
-  if (BORDER)
-    swapTXData = TXDATA;
-  else
-    swapTXData = {TXDATA[7:0], TXDATA[15:8], TXDATA[23:16], TXDATA[31:24]};
-end
-
-always @ (*) begin
-  if (BORDER) begin
-    swapRXData          = rxdpara[31:0];
-    swapRXData[bpos_rx] = rxdat;
-  end
-  else begin
-    swapRXData = rxdpara[31:0];
-    swapRXData[bpos_rx] = rxdat;
-    swapRXData = {swapRXData[7:0], swapRXData[15:8], swapRXData[23:16], swapRXData[31:24]};
-  end
-end
 
 // ----------
 // SPI Transmit State Machine
@@ -168,7 +145,7 @@ end
 // ----------
 // RX Data Control
 // --------------------------------------------------
-assign bpos_rx = fc2bit(fc_rx, DWIDTH);
+assign bpos_rx = fc2bit(BORDER, DWIDTH, fc_rx);
 always @ (posedge SPICLK or negedge SYSRSTB) begin
   if (!SYSRSTB) begin
     rxdpara <= 32'h0000_0000;
@@ -188,7 +165,8 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
       if (bpos_rx == 24 | fc_rx == DWIDTH) begin
         rxdpara <= 32'h00000000;
         RXDPT <= fc2word(fc_rx);
-        RXDATA <= swapRXData;
+        RXDATA <= rxdpara;
+        RXDATA[bpos_rx] <= rxdat;
         RXVTGL <= ~RXVTGL;
       end
     end
@@ -223,7 +201,7 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
 
     // SPI TX/RX Data
     if (spist == spiDATA)
-      mosi_r <= swapTXData[bpos_tx];
+      mosi_r <= TXDATA[bpos_tx];
     else
       mosi_r <= 1'b0;
 
@@ -253,7 +231,7 @@ always @ (negedge SPICLK or negedge SYSRSTB) begin
 
     // SPI TX/RX Data
     if (spist == spiDATA)
-      mosi_f <= swapTXData[bpos_tx];
+      mosi_f <= TXDATA[bpos_tx];
     else
       mosi_f <= 1'b0;
 
@@ -299,14 +277,14 @@ end
 endfunction
 
 function [4:0] fc2bit;
-  input [8:0] fc;
+  input bo;
   input [8:0] dw;
+  input [8:0] fc;
 begin
-  // Last Byte
-  if (dw[8:3] == fc[8:3])
-    fc2bit = (fc[4:3] * 8) + (dw[2:0] - fc[2:0]);
+  if (bo == 0)
+    fc2bit = (fc[4:3] * 8) + (7 -fc[2:0]);
   else
-    fc2bit = (fc[4:3] * 8) + (7 - fc[2:0]);
+    fc2bit = dw[4:0] - fc[4:0];
 end
 endfunction
 

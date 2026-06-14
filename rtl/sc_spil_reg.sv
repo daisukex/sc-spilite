@@ -57,7 +57,7 @@ module sc_spil_reg
   input [3:0] TXDPT,
   input [31:0] RXDATA,
   input [3:0] RXDPT,
-  input RXVALID,
+  input RXVTGL,
   output logic [7:0] CLKHIGH,
   output logic [7:0] CLKLOW,
   output [3:0] CSSETUP,
@@ -259,12 +259,18 @@ always_ff @ (posedge SYSCLK) begin
 end
 assign TXDATA = TXD[TXDPT];
 
+logic [2:0] sync_rxvtgl;
 always_ff @ (posedge SYSCLK) begin
-  if (!reg_rst_b)
+  if (!reg_rst_b) begin
     for (int i=0; i<BUFFER_DEPTH; i++)
       RXD[i] <= reg_reset(reg_table[get_idx(RXD_desc, i)]);
-  else if (RXVALID)
-    RXD[RXDPT] <= RXDATA;
+    sync_rxvtgl <= 3'h0;
+  end
+  else begin
+    sync_rxvtgl <= {sync_rxvtgl[1:0], RXVTGL};
+    if (sync_rxvtgl[2] != sync_rxvtgl[1])
+      RXD[RXDPT] <= RXDATA;
+  end
 end
 
 

@@ -41,7 +41,7 @@ module sc_spi_spc # (
   input [31:0] TXDATA,       // SPI Transfer Data
   output [3:0] TXDPT,        // SPI Transfer buffer pointer
   output reg [31:0] RXDATA,  // SPI Receive Data
-  output reg RXVALID,        // SPI Receive Data Valid
+  output reg RXVTGL,         // SPI Receive Data Valid (Toggle)
   output reg [3:0] RXDPT,    // SPI Receive buffer pointer
 
   // SPI Interface
@@ -176,10 +176,9 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
     fc_rx <= 0;
     RXDATA <= 32'h0000_0000;
     RXDPT <= 4'h0;
-    RXVALID <= 1'b0;
+    RXVTGL <= 1'b0;
   end
   else begin
-    RXVALID <= 1'b0;
     fc_rx <= fc;
 
     if (fvalid) begin
@@ -190,7 +189,7 @@ always @ (posedge SPICLK or negedge SYSRSTB) begin
         rxdpara <= 32'h00000000;
         RXDPT <= fc2word(fc_rx);
         RXDATA <= swapRXData;
-        RXVALID <= 1'b1;
+        RXVTGL <= ~RXVTGL;
       end
     end
     else if (spist == spiIDLE)

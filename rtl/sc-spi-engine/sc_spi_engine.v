@@ -52,7 +52,7 @@ module sc_spi_engine # (
   output [3:0] TXDPT,
   output [31:0] RXDATA,
   output [3:0] RXDPT,
-  output RXVALID,
+  output RXVTGL,
 
   // SPI Interface
   // ------------------------
@@ -175,7 +175,7 @@ sc_spi_spc # (
   .TXDATA(TXDATA),
   .TXDPT(TXDPT),
   .RXDATA(RXDATA),
-  .RXVALID(RXVALID),
+  .RXVTGL(RXVTGL),
   .RXDPT(RXDPT),
 
   // SPI Interface
